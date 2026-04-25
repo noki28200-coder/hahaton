@@ -1,0 +1,38 @@
+# MinIO data (не коммитим хранилище)
+minio/data/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Переменные окружения (содержит секреты)
+.env
+
+# Локальные транскрипции и результаты
+transcriptions/
+analyzer/data/
+mango-collector/state/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Логи
+*.log
+logs/
+
+# Модели Whisper (большие файлы, скачиваются автоматически)
+transcriber/models/
