@@ -28,7 +28,7 @@ mango-collector/state/
 *.swo
 
 # macOS
-.DS_Store
+.ы
 
 # Логи
 *.log

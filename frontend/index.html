@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call Records · Панель управления</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;height:100vh;overflow:hidden;display:flex}
+
+/* Sidebar */
+.sidebar{width:220px;flex-shrink:0;background:#161b22;border-right:1px solid #30363d;display:flex;flex-direction:column;height:100vh}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-title{font-weight:600;font-size:14px;color:#fff;line-height:1.2}
+.logo-sub{font-size:11px;color:#6b7280}
+nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:#8b949e;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.nav-item:hover{background:#1f2937;color:#e6edf3}
+.nav-item.active{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff}
+.nav-item .icon{font-size:16px;flex-shrink:0}
+.sidebar-bottom{padding:12px 16px;border-top:1px solid #30363d}
+.health-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280}
+.health-dot{width:8px;height:8px;border-radius:50%;background:#374151;flex-shrink:0;transition:background .3s}
+
+/* Main */
+main{flex:1;overflow-y:auto;height:100vh}
+.tab-pane{padding:32px;display:none;min-height:100%}
+.tab-pane.active{display:block}
+
+/* Cards */
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px}
+.stat-label{font-size:12px;color:#6b7280;margin-bottom:8px}
+.stat-value{font-size:30px;font-weight:700;color:#fff;line-height:1}
+.stat-sub{font-size:11px;color:#4b5563;margin-top:4px}
+
+/* Pipeline */
+.pipeline-stages{display:flex;align-items:flex-start;padding:16px 0 8px;position:relative}
+.stage{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:70px}
+.stage-circle{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #30363d;background:#0d1117;transition:all .4s;flex-shrink:0}
+.stage-circle.done{border-color:#22c55e;background:#052e16;color:#22c55e;font-size:18px}
+.stage-circle.active{border-color:#3b82f6;background:#0c1a35;animation:pulse-ring 1.5s infinite}
+.stage-circle.error{border-color:#ef4444;background:#2d0a0a;color:#ef4444}
+.stage-circle.pending{border-color:#374151;background:#111827;color:#374151}
+.stage-name{font-size:11px;font-weight:600;text-align:center;transition:color .3s}
+.stage-name.done{color:#22c55e}
+.stage-name.active{color:#60a5fa}
+.stage-name.error{color:#f87171}
+.stage-name.pending{color:#4b5563}
+.stage-time{font-size:10px;color:#374151;text-align:center;min-height:14px}
+.stage-conn{flex:1;height:2px;background:#21262d;align-self:center;margin:0 2px;margin-top:-30px;transition:background .4s;min-width:10px}
+.stage-conn.done{background:#22c55e}
+
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.5)}50%{box-shadow:0 0 0 8px rgba(59,130,246,0)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* Call card */
+.call-card{background:#161b22;border:1px solid #30363d;border-radius:12px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+.call-card:hover{border-color:#444d56}
+.call-header{padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.call-meta{flex:1;min-width:0}
+.call-id-row{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.call-detail-row{font-size:12px;color:#6b7280}
+.expand-arrow{color:#4b5563;font-size:14px;flex-shrink:0;transition:transform .2s}
+.call-stages{padding:0 20px;border-top:1px solid #21262d}
+.call-expanded{border-top:1px solid #21262d}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-green{background:#052e16;color:#22c55e;border:1px solid #166534}
+.b-blue{background:#0c1a35;color:#60a5fa;border:1px solid #1d4ed8}
+.b-yellow{background:#2d1f00;color:#fbbf24;border:1px solid #92400e}
+.b-red{background:#2d0a0a;color:#f87171;border:1px solid #991b1b}
+.b-gray{background:#111827;color:#9ca3af;border:1px solid #374151}
+.b-purple{background:#1e0a35;color:#c084fc;border:1px solid #7c3aed}
+
+/* Expandable sections */
+.section-header{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.transcript-box{background:#0d1117;border-radius:8px;padding:14px;font-size:13px;line-height:1.7;color:#c9d1d9;max-height:220px;overflow-y:auto}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.analysis-box{background:#0d1117;border-radius:8px;padding:14px}
+.analysis-label{font-size:11px;color:#6b7280;margin-bottom:6px}
+.action-list{background:#0d1117;border-radius:8px;padding:14px}
+.action-item{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;border-bottom:1px solid #21262d}
+.action-item:last-child{border-bottom:none}
+.action-bullet{color:#3b82f6;flex-shrink:0;margin-top:2px}
+
+/* Upload */
+.drop-zone{border:2px dashed #374151;border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:all .2s;background:#0d1117}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#3b82f6;background:#0c1a35}
+.upload-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label.field-label{font-size:12px;color:#8b949e;display:block;margin-bottom:4px}
+input[type=text],input[type=file],select,textarea{background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:8px 12px;font-size:13px;width:100%;font-family:'Inter',sans-serif;transition:border-color .2s}
+input:focus,select:focus{outline:none;border-color:#3b82f6}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-primary{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{background:#374151;color:#6b7280;cursor:not-allowed;transform:none}
+.btn-secondary{background:#21262d;color:#e6edf3;border:1px solid #30363d}
+.btn-secondary:hover{background:#30363d}
+.btn-sm{padding:4px 10px;font-size:12px}
+.progress-bar{height:4px;background:#21262d;border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1d4ed8,#7c3aed);border-radius:2px;transition:width .4s}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #30363d;white-space:nowrap}
+td{padding:11px 16px;font-size:13px;border-bottom:1px solid #21262d}
+tr:last-child td{border-bottom:none}
+tr.clickable{cursor:pointer;transition:background .1s}
+tr.clickable:hover td{background:#1a1f2e}
+
+/* Logs */
+.log-entry{padding:10px 14px;border-radius:8px;margin-bottom:6px;border-left:3px solid #374151}
+.log-info{background:#0c1a35;border-left-color:#3b82f6}
+.log-warning{background:#2d1f00;border-left-color:#f59e0b}
+.log-error{background:#2d0a0a;border-left-color:#ef4444}
+.log-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px;font-size:11px}
+.log-msg{font-size:13px;color:#c9d1d9}
+
+/* Misc */
+code{font-family:'JetBrains Mono',monospace;font-size:12px}
+.chip{display:inline-block;background:#1f2937;padding:1px 6px;border-radius:4px;font-size:11px;margin:1px}
+.empty-state{text-align:center;padding:60px;color:#4b5563;font-size:14px}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.section-title{font-size:24px;font-weight:700;color:#fff;margin-bottom:4px}
+.section-sub{font-size:14px;color:#6b7280;margin-bottom:24px}
+.row-actions{display:flex;gap:4px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#374151;border-radius:3px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #374151;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#22c55e;font-weight:600}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-ring .8s infinite}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">CR</div>
+    <div>
+      <div class="logo-title">Call Records</div>
+      <div class="logo-sub">Панель управления</div>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+      <span class="icon">🏠</span> Дашборд
+    </button>
+    <button class="nav-item" id="nav-upload" onclick="showTab('upload')">
+      <span class="icon">📤</span> Загрузить звонок
+    </button>
+    <button class="nav-item" id="nav-pipeline" onclick="showTab('pipeline')">
+      <span class="icon">🔄</span> Пайплайн
+    </button>
+    <button class="nav-item" id="nav-calls" onclick="showTab('calls')">
+      <span class="icon">📞</span> Звонки
+    </button>
+    <button class="nav-item" id="nav-logs" onclick="showTab('logs')">
+      <span class="icon">📋</span> Журнал
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="health-row" id="health-row">
+      <div class="health-dot" id="health-dot"></div>
+      <span id="health-text">API: проверка...</span>
+    </div>
+    <div style="font-size:11px;color:#374151;margin-top:6px;" id="last-refresh-time"></div>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main>
+
+  <!-- DASHBOARD -->
+  <div class="tab-pane active" id="tab-dashboard">
+    <div class="section-title">Дашборд</div>
+    <div class="section-sub">Статистика и состояние системы</div>
+
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card"><div class="stat-label">📞 Всего звонков</div><div class="stat-value" id="s-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">✅ Проанализировано за 24ч</div><div class="stat-value" id="s-analyzed" style="color:#22c55e">—</div></div>
+      <div class="stat-card"><div class="stat-label">❌ Ошибок за 24ч</div><div class="stat-value" id="s-errors" style="color:#ef4444">—</div></div>
+      <div class="stat-card"><div class="stat-label">💾 Хранилище</div><div class="stat-value" id="s-storage" style="font-size:22px">—</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div class="card" style="padding:20px;">
+        <div class="section-header" style="margin-bottom:12px;">По статусам</div>
+        <div id="by-status" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="card" style="padding:20px;">
+        <div class="section-header" style="margin-bottom:12px;">Последняя активность</div>
+        <div id="last-activity" style="font-size:13px;display:flex;flex-direction:column;gap:6px;color:#8b949e;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:600;">Последние звонки</div>
+      <button class="btn btn-secondary btn-sm" onclick="showTab('pipeline')">Все →</button>
+    </div>
+    <div id="dashboard-calls"></div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="tab-pane" id="tab-upload">
+    <div class="section-title">Загрузить звонок</div>
+    <div class="section-sub">Загрузите MP3 файл — он пройдёт через транскрипцию и AI-анализ</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;">
+      <div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div id="drop-content">
+            <div style="font-size:48px;margin-bottom:12px;">🎙️</div>
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;">Перетащите MP3</div>
+            <div style="font-size:13px;color:#6b7280;">или нажмите для выбора файла</div>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept=".mp3,.wav,audio/*" style="display:none" onchange="handleFileSelect(this)">
+
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary" id="upload-btn" onclick="doUpload()" disabled style="width:100%;padding:12px;font-size:14px;">
+            Выберите файл для загрузки
+          </button>
+          <div id="upload-progress" style="display:none;margin-top:8px;">
+            <div id="upload-status-text" style="font-size:12px;color:#8b949e;margin-bottom:4px;">Загружаю...</div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <div class="section-header" style="margin-bottom:14px;">Метаданные (опционально)</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label class="field-label">Сотрудник</label>
+            <input type="text" id="f-employee-name" placeholder="Иван Иванов">
+          </div>
+          <div>
+            <label class="field-label">ID сотрудника</label>
+            <input type="text" id="f-employee-id" placeholder="emp-001">
+          </div>
+          <div>
+            <label class="field-label">Номер звонящего</label>
+            <input type="text" id="f-phone-from" placeholder="+79001234567">
+          </div>
+          <div>
+            <label class="field-label">Номер принимающего</label>
+            <input type="text" id="f-phone-to" placeholder="+74951234567">
+          </div>
+          <div>
+            <label class="field-label">Направление</label>
+            <select id="f-direction">
+              <option value="">— не указано —</option>
+              <option value="inbound">📥 Входящий</option>
+              <option value="outbound">📤 Исходящий</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live tracker -->
+    <div id="tracker-section" style="max-width:900px;margin-top:28px;display:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="font-size:16px;font-weight:600;">Обработка звонка</div>
+        <div class="live-badge"><div class="live-dot"></div> Live</div>
+      </div>
+      <div id="tracker-card"></div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="tab-pane" id="tab-pipeline">
+    <div class="section-title">Пайплайн</div>
+    <div class="section-sub">Все звонки с визуализацией стадий обработки</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="pipeline-filters">
+      <button class="btn btn-secondary btn-sm active-filter" onclick="setPipelineFilter('all',this)">Все</button>
+      <button class="btn btn-secondary btn-sm" onclick="setPipelineFilter('stored',this)">Сохранён</button>
+      <button class="btn btn-secondary btn-sm" onclick="setPipelineFilter('transcribed',this)">Транскрибирован</button>
+      <button class="btn btn-secondary btn-sm" onclick="setPipelineFilter('analyzed',this)">Проанализирован</button>
+      <button class="btn btn-secondary btn-sm" onclick="setPipelineFilter('failed_transcription',this)" style="color:#f87171">Ошибка транскрипции</button>
+      <button class="btn btn-secondary btn-sm" onclick="setPipelineFilter('failed_analysis',this)" style="color:#f87171">Ошибка анализа</button>
+    </div>
+    <div id="pipeline-list"></div>
+  </div>
+
+  <!-- CALLS TABLE -->
+  <div class="tab-pane" id="tab-calls">
+    <div class="section-title">Звонки</div>
+    <div class="section-sub">Таблица всех записей</div>
+    <div class="card" style="overflow:hidden;">
+      <div style="padding:14px 16px;border-bottom:1px solid #30363d;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="text" placeholder="🔍 Поиск по ID, имени, номеру..." style="flex:1;min-width:200px;max-width:300px;" oninput="filterCallsTable(this.value)">
+        <select style="width:180px;" onchange="filterCallsTableStatus(this.value)">
+          <option value="">Все статусы</option>
+          <option value="stored">Сохранён</option>
+          <option value="transcribed">Транскрибирован</option>
+          <option value="analyzed">Проанализирован</option>
+          <option value="failed_transcription">Ошибка транскрипции</option>
+          <option value="failed_analysis">Ошибка анализа</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="refresh()">↺ Обновить</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Сотрудник</th>
+              <th>Телефоны</th>
+              <th>Направление</th>
+              <th>Статус</th>
+              <th>Оценка</th>
+              <th>Тональность</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody id="calls-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="tab-pane" id="tab-logs">
+    <div class="section-title">Журнал операций</div>
+    <div class="section-sub">Технические логи — загрузки, транскрипции, анализы, ошибки</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({})">Все</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({level:'error'})" style="color:#f87171;">❌ Только ошибки</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({stage:'upload'})">Загрузка</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({stage:'transcription'})">Транскрипция</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({stage:'analysis'})">Анализ</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadLogs({})" style="margin-left:auto;">↺ Обновить</button>
+    </div>
+    <div id="logs-list" style="max-height:calc(100vh - 200px);overflow-y:auto;"></div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════
+const API_KEY = 'QtEAKkjfW9UNDDT8o-FWOFYwKriwR0VkF8b_1THFp60';
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+const S = {
+  tab: 'dashboard',
+  calls: [],
+  logs: [],
+  stats: null,
+  expanded: {}, // callId -> {transcript, analysis} | {loading:true}
+  pipelineFilter: 'all',
+  trackedCallId: null,
+  trackedCallData: null,
+  trackingInterval: null,
+};
+
+// ═══════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════
+async function apiFetch(path, params = {}) {
+  const url = new URL(path, window.location.origin);
+  Object.entries(params).forEach(([k, v]) => { if (v !== '' && v !== undefined) url.searchParams.set(k, v); });
+  const r = await fetch(url.toString(), { headers: { 'X-API-Key': API_KEY } });
+  if (!r.ok) throw new Error(`${r.status}`);
+  return r.json();
+}
+
+const API = {
+  health: () => fetch('/health').then(r => r.json()).catch(() => null),
+  stats:  () => apiFetch('/admin/stats'),
+  logs:   (p) => apiFetch('/admin/logs', { limit: 100, ...p }),
+  calls:  (p) => apiFetch('/calls', { limit: 50, ...p }),
+  call:   (id) => apiFetch(`/calls/${id}`),
+  transcript: (id) => apiFetch(`/calls/${id}/transcript`),
+  analysis:   (id) => apiFetch(`/calls/${id}/analysis`),
+  upload: (fd) => fetch('/calls/upload', { method:'POST', headers:{'X-API-Key':API_KEY}, body:fd })
+    .then(r => { if (!r.ok) return r.json().then(e => { throw new Error(e.detail || r.status); }); return r.json(); }),
+};
+
+// ═══════════════════════════════════
+// FORMATTERS
+// ═══════════════════════════════════
+function fTime(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+function fDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit' }) + ' ' +
+         d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+}
+function shortId(id) { return id ? id.substring(0, 8) : '—'; }
+
+function statusBadge(s) {
+  const m = {
+    stored:              ['b-blue',   '💾 Сохранён'],
+    transcribed:         ['b-purple', '🔤 Транскрибирован'],
+    analyzed:            ['b-green',  '✅ Проанализирован'],
+    pending:             ['b-gray',   '⏳ Ожидание'],
+    failed_transcription:['b-red',    '❌ Ошибка транскрипции'],
+    failed_analysis:     ['b-red',    '❌ Ошибка анализа'],
+  };
+  const [cls, label] = m[s] || ['b-gray', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function sentimentBadge(s) {
+  const m = { positive:['b-green','😊 Позитив'], neutral:['b-yellow','😐 Нейтральный'], negative:['b-red','😠 Негатив'] };
+  const [cls, label] = m[s] || ['b-gray', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function scoreColor(n) {
+  if (!n) return '#4b5563';
+  if (n >= 8) return '#22c55e';
+  if (n >= 6) return '#f59e0b';
+  return '#ef4444';
+}
+
+// ═══════════════════════════════════
+// PIPELINE STAGES
+// ═══════════════════════════════════
+function stageState(status, stageIdx) {
+  // stageIdx: 0=Upload, 1=Stored, 2=Transcribe, 3=Analyze
+  const done = {
+    stored:              [0,1],
+    transcribed:         [0,1,2],
+    analyzed:            [0,1,2,3],
+    pending:             [0],
+    failed_transcription:[0,1],
+    failed_analysis:     [0,1,2],
+  };
+  const active = {
+    stored:              [2],
+    transcribed:         [3],
+    analyzed:            [],
+    pending:             [1],
+    failed_transcription:[],
+    failed_analysis:     [],
+  };
+  const error = {
+    failed_transcription:[2],
+    failed_analysis:     [3],
+  };
+
+  const d = done[status] || [];
+  const a = active[status] || [];
+  const e = error[status] || [];
+
+  if (e.includes(stageIdx)) return 'error';
+  if (d.includes(stageIdx)) return 'done';
+  if (a.includes(stageIdx)) return 'active';
+  return 'pending';
+}
+
+function renderStages(call) {
+  const status = call.status || 'pending';
+  const stages = [
+    { label: 'Загрузка',     time: call.created_at,    icon: '📤' },
+    { label: 'Хранение',     time: call.created_at,    icon: '💾' },
+    { label: 'Транскрипция', time: call.transcribed_at, icon: '🔤' },
+    { label: 'AI-анализ',    time: call.analyzed_at,    icon: '🤖' },
+  ];
+
+  return `<div class="pipeline-stages">` +
+    stages.map((st, i) => {
+      const ss = stageState(status, i);
+      const icon = ss === 'done' ? '✓' : ss === 'error' ? '✕' : ss === 'active' ? '⟳' : st.icon;
+      const conn = i > 0 ? `<div class="stage-conn ${stageState(status, i-1) === 'done' && ss !== 'pending' ? 'done' : ''}"></div>` : '';
+      return `${conn}<div class="stage">
+        <div class="stage-circle ${ss}" style="${ss==='active'?'font-size:12px;':''}">
+          ${ss==='active'?`<span style="animation:spin .8s linear infinite;display:inline-block">${icon}</span>`:icon}
+        </div>
+        <div class="stage-name ${ss}">${st.label}</div>
+        <div class="stage-time">${st.time ? fTime(st.time) : ''}</div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+// ═══════════════════════════════════
+// CALL CARD
+// ═══════════════════════════════════
+function renderCallCard(call, forceExpand) {
+  const id = call.call_id;
+  const exp = S.expanded[id];
+  const isOpen = forceExpand || !!exp;
+
+  const scoreHtml = call.analysis_score
+    ? `<span class="badge b-green">⭐ ${call.analysis_score}/10</span>`
+    : '';
+  const sentimentHtml = call.analysis_sentiment ? sentimentBadge(call.analysis_sentiment) : '';
+  const dirIcon = call.direction === 'inbound' ? '📥' : call.direction === 'outbound' ? '📤' : '';
+
+  let expandedHtml = '';
+  if (isOpen) {
+    if (exp && exp.loading) {
+      expandedHtml = `<div class="call-expanded" style="padding:20px;text-align:center;color:#6b7280;font-size:13px;"><span class="spinner"></span> Загружаю...</div>`;
+    } else if (exp) {
+      let trHtml = '';
+      if (exp.transcript) {
+        trHtml = `<div style="padding:16px 20px;border-bottom:1px solid #21262d;">
+          <div class="section-header">📝 Транскрипция · ${exp.transcript.language || ''} · ${exp.transcript.segments?.length || 0} сегментов</div>
+          <div class="transcript-box">${exp.transcript.full_text || 'Текст недоступен'}</div>
+        </div>`;
+      } else {
+        trHtml = `<div style="padding:12px 20px;border-bottom:1px solid #21262d;font-size:12px;color:#4b5563;">Транскрипция ещё не готова</div>`;
+      }
+
+      let anHtml = '';
+      if (exp.analysis) {
+        const an = exp.analysis;
+        anHtml = `<div style="padding:16px 20px;">
+          <div class="section-header">🤖 AI-анализ · ${an.analyzed_at ? fDateTime(an.analyzed_at) : ''}</div>
+          <div class="analysis-grid">
+            <div class="analysis-box">
+              <div class="analysis-label">Резюме</div>
+              <div style="font-size:13px;line-height:1.6;color:#c9d1d9;">${an.summary || '—'}</div>
+            </div>
+            <div class="analysis-box">
+              <div class="analysis-label">Показатели</div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;">
+                <div>Оценка: <strong style="color:${scoreColor(an.score)}">${an.score ? an.score+'/10' : '—'}</strong></div>
+                <div>Тональность: ${an.sentiment ? sentimentBadge(an.sentiment) : '—'}</div>
+                <div>Скрипт: <strong>${an.script_compliance ? '✅ Соблюдён' : '❌ Нарушен'}</strong></div>
+                <div>Исход: <strong>${an.call_outcome || '—'}</strong></div>
+                ${an.topics?.length ? `<div>Темы: ${an.topics.map(t=>`<span class="chip">${t}</span>`).join('')}</div>` : ''}
+              </div>
+            </div>
+          </div>
+          ${an.action_items?.length ? `
+            <div class="action-list">
+              <div class="analysis-label" style="margin-bottom:8px;">Задачи после звонка</div>
+              ${an.action_items.map(a => `<div class="action-item"><span class="action-bullet">→</span><span>${a}</span></div>`).join('')}
+            </div>
+          ` : ''}
+          ${an.script_violations?.length ? `
+            <div class="action-list" style="margin-top:8px;border-left:3px solid #ef4444;">
+              <div class="analysis-label" style="color:#f87171;margin-bottom:8px;">Нарушения скрипта</div>
+              ${an.script_violations.map(v => `<div class="action-item"><span style="color:#ef4444;">✗</span><span>${v}</span></div>`).join('')}
+            </div>
+          ` : ''}
+        </div>`;
+      }
+      expandedHtml = `<div class="call-expanded">${trHtml}${anHtml}</div>`;
+    }
+  }
+
+  return `<div class="call-card" id="call-card-${id}">
+    <div class="call-header" onclick="toggleExpand('${id}')">
+      <div class="call-meta">
+        <div class="call-id-row">
+          <code style="color:#60a5fa;">${shortId(id)}…</code>
+          ${statusBadge(call.status)}
+          ${scoreHtml}
+          ${sentimentHtml}
+        </div>
+        <div class="call-detail-row">
+          ${call.employee_name ? `👤 ${call.employee_name}` : ''}
+          ${dirIcon ? ` · ${dirIcon} ${call.direction==='inbound'?'Входящий':'Исходящий'}` : ''}
+          ${call.phone_from ? ` · ${call.phone_from}` : ''}
+          ${call.phone_to ? ` → ${call.phone_to}` : ''}
+          · ${fDateTime(call.created_at)}
+        </div>
+      </div>
+      <div class="expand-arrow" style="transform:rotate(${isOpen?'180':'0'}deg)">▼</div>
+    </div>
+    <div class="call-stages">${renderStages(call)}</div>
+    ${expandedHtml}
+  </div>`;
+}
+
+async function toggleExpand(id) {
+  if (S.expanded[id]) {
+    delete S.expanded[id];
+    renderCurrentPipeline();
+    return;
+  }
+  S.expanded[id] = { loading: true };
+  renderCurrentPipeline();
+  try {
+    const [tr, an] = await Promise.allSettled([API.transcript(id), API.analysis(id)]);
+    S.expanded[id] = {
+      transcript: tr.status === 'fulfilled' ? tr.value : null,
+      analysis:   an.status === 'fulfilled' ? an.value : null,
+    };
+  } catch(e) {
+    S.expanded[id] = { error: e.message };
+  }
+  renderCurrentPipeline();
+}
+
+function renderCurrentPipeline() {
+  if (S.tab === 'pipeline') renderPipeline();
+}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+function showTab(name) {
+  S.tab = name;
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-' + name)?.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  switch (S.tab) {
+    case 'dashboard': renderDashboard(); break;
+    case 'pipeline':  renderPipeline(); break;
+    case 'calls':     renderCallsTable(); break;
+    case 'logs':      renderLogsTab(); break;
+    // upload tab is managed separately — don't reset the form
+  }
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const st = S.stats;
+
+  // Stats
+  _setHtml('s-total',    st?.calls?.total ?? '—');
+  _setHtml('s-analyzed', st?.calls?.last_24h?.analyzed ?? '—');
+  _setHtml('s-errors',   st?.errors?.last_24h ?? '—');
+  _setHtml('s-storage',  st?.storage?.total_size_mb != null ? st.storage.total_size_mb + ' MB' : '—');
+
+  // By status
+  const byStatus = st?.calls?.by_status || {};
+  _setHtml('by-status', Object.entries(byStatus).length
+    ? Object.entries(byStatus).map(([s,c]) => `
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${statusBadge(s)}
+          <span style="font-size:20px;font-weight:700;color:#fff;">${c}</span>
+        </div>`).join('')
+    : '<span style="color:#4b5563;font-size:13px;">Нет данных</span>');
+
+  // Last activity
+  const la = st?.last_activity || {};
+  _setHtml('last-activity', [
+    ['Последняя загрузка', la.last_download],
+    ['Последняя транскрипция', la.last_transcription],
+    ['Последний анализ', la.last_analysis],
+    ['Последняя ошибка', la.last_error],
+  ].map(([label, val]) => `<div><span style="color:#4b5563;">${label}:</span> ${val ? fDateTime(val) : '—'}</div>`).join(''));
+
+  // Recent calls
+  const calls = S.calls.slice(0, 5);
+  _setHtml('dashboard-calls', calls.length
+    ? calls.map(c => renderCallCard(c)).join('')
+    : `<div class="empty-state"><div class="empty-icon">📭</div>Нет звонков. <a href="#" onclick="showTab('upload');return false;" style="color:#3b82f6;">Загрузите первый →</a></div>`);
+}
+
+// ─── PIPELINE ───
+let _pipelineFilter = 'all';
+
+function setPipelineFilter(f, btn) {
+  _pipelineFilter = f;
+  document.querySelectorAll('#pipeline-filters button').forEach(b => b.style.borderColor = '');
+  if (btn) btn.style.borderColor = '#3b82f6';
+  renderPipeline();
+}
+
+function renderPipeline() {
+  const calls = _pipelineFilter === 'all' ? S.calls : S.calls.filter(c => c.status === _pipelineFilter);
+  _setHtml('pipeline-list', calls.length
+    ? calls.map(c => renderCallCard(c)).join('')
+    : `<div class="empty-state"><div class="empty-icon">🔍</div>Нет звонков с таким статусом</div>`);
+}
+
+// ─── CALLS TABLE ───
+let _callsQuery = '', _callsStatus = '';
+
+function renderCallsTable() {
+  let calls = S.calls;
+  if (_callsQuery) calls = calls.filter(c =>
+    c.call_id?.includes(_callsQuery) ||
+    c.employee_name?.toLowerCase().includes(_callsQuery.toLowerCase()) ||
+    c.phone_from?.includes(_callsQuery) || c.phone_to?.includes(_callsQuery));
+  if (_callsStatus) calls = calls.filter(c => c.status === _callsStatus);
+
+  _setHtml('calls-tbody', calls.length
+    ? calls.map(c => `<tr class="clickable" onclick="goToCall('${c.call_id}')">
+        <td><code style="color:#60a5fa;">${shortId(c.call_id)}…</code></td>
+        <td>${c.employee_name || '<span style="color:#4b5563;">—</span>'}</td>
+        <td style="color:#8b949e;">${[c.phone_from, c.phone_to].filter(Boolean).join(' → ') || '—'}</td>
+        <td>${c.direction === 'inbound' ? '📥 Входящий' : c.direction === 'outbound' ? '📤 Исходящий' : '—'}</td>
+        <td>${statusBadge(c.status)}</td>
+        <td style="font-weight:700;color:${scoreColor(c.analysis_score)}">${c.analysis_score ? c.analysis_score+'/10' : '—'}</td>
+        <td>${c.analysis_sentiment ? sentimentBadge(c.analysis_sentiment) : '—'}</td>
+        <td style="color:#6b7280;">${fDateTime(c.created_at)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="8" class="empty-state">Нет записей</td></tr>`);
+}
+
+function filterCallsTable(q) { _callsQuery = q; renderCallsTable(); }
+function filterCallsTableStatus(s) { _callsStatus = s; renderCallsTable(); }
+
+async function goToCall(id) {
+  showTab('pipeline');
+  if (!S.expanded[id]) await toggleExpand(id);
+  setTimeout(() => {
+    document.getElementById('call-card-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ─── LOGS ───
+async function loadLogs(params = {}) {
+  try {
+    const data = await API.logs(params);
+    S.logs = data.logs || [];
+    renderLogsTab();
+  } catch(e) { console.error('Logs error:', e); }
+}
+
+function renderLogsTab() {
+  _setHtml('logs-list', S.logs.length
+    ? S.logs.map(l => `<div class="log-entry log-${l.level}">
+        <div class="log-meta">
+          <span style="font-weight:700;color:${l.level==='error'?'#f87171':l.level==='warning'?'#fbbf24':'#60a5fa'};text-transform:uppercase;font-size:11px;">${l.level}</span>
+          ${l.stage ? `<span class="badge b-gray" style="font-size:10px;">${l.stage}</span>` : ''}
+          ${l.call_id ? `<code style="color:#4b5563;font-size:10px;">${shortId(l.call_id)}…</code>` : ''}
+          <span style="margin-left:auto;color:#4b5563;">${fDateTime(l.created_at)}</span>
+        </div>
+        <div class="log-msg">${l.message}</div>
+      </div>`).join('')
+    : `<div class="empty-state"><div class="empty-icon">📋</div>Нет записей в журнале</div>`);
+}
+
+// ═══════════════════════════════════
+// UPLOAD + LIVE TRACKER
+// ═══════════════════════════════════
+let _uploadFile = null;
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (file) setFile(file);
+}
+
+function setFile(file) {
+  _uploadFile = file;
+  _setHtml('drop-content', `
+    <div style="font-size:40px;margin-bottom:10px;">✅</div>
+    <div style="font-size:14px;font-weight:600;color:#22c55e;">${file.name}</div>
+    <div style="font-size:12px;color:#6b7280;margin-top:4px;">${(file.size/1024/1024).toFixed(2)} MB · нажмите чтобы изменить</div>`);
+  const btn = document.getElementById('upload-btn');
+  if (btn) { btn.disabled = false; btn.textContent = `📤 Загрузить ${file.name}`; }
+}
+
+// Drag & drop
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('drop-zone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) setFile(f);
+  });
+});
+
+async function doUpload() {
+  if (!_uploadFile) return;
+  const btn = document.getElementById('upload-btn');
+  const progEl = document.getElementById('upload-progress');
+  const fillEl = document.getElementById('progress-fill');
+  const stEl = document.getElementById('upload-status-text');
+
+  btn.disabled = true;
+  progEl.style.display = 'block';
+  fillEl.style.width = '20%';
+  stEl.textContent = 'Отправляю файл...';
+  stEl.style.color = '#8b949e';
+  fillEl.style.background = 'linear-gradient(90deg,#1d4ed8,#7c3aed)';
+
+  const fd = new FormData();
+  fd.append('file', _uploadFile);
+  const empName = document.getElementById('f-employee-name')?.value;
+  const empId   = document.getElementById('f-employee-id')?.value;
+  const phoneFrom = document.getElementById('f-phone-from')?.value;
+  const phoneTo   = document.getElementById('f-phone-to')?.value;
+  const dir       = document.getElementById('f-direction')?.value;
+  if (empName) fd.append('employee_name', empName);
+  if (empId)   fd.append('employee_id', empId);
+  if (phoneFrom) fd.append('phone_from', phoneFrom);
+  if (phoneTo)   fd.append('phone_to', phoneTo);
+  if (dir)       fd.append('direction', dir);
+
+  try {
+    fillEl.style.width = '60%';
+    const result = await API.upload(fd);
+    fillEl.style.width = '100%';
+    stEl.style.color = '#22c55e';
+    stEl.textContent = `✅ Загружен! ID: ${result.call_id}`;
+
+    // Show tracker
+    S.trackedCallId = result.call_id;
+    S.trackedCallData = { call_id: result.call_id, status: 'stored', created_at: new Date().toISOString() };
+    document.getElementById('tracker-section').style.display = 'block';
+    renderTrackerCard();
+    startTracking(result.call_id);
+
+    // Reset
+    setTimeout(() => {
+      progEl.style.display = 'none';
+      fillEl.style.width = '0%';
+      btn.textContent = 'Выберите файл для загрузки';
+    }, 4000);
+
+  } catch(e) {
+    fillEl.style.width = '100%';
+    fillEl.style.background = '#ef4444';
+    stEl.style.color = '#f87171';
+    stEl.textContent = `❌ Ошибка: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = `Попробовать снова`;
+  }
+}
+
+function renderTrackerCard() {
+  const call = S.trackedCallData;
+  if (!call) return;
+  const exp = S.expanded[call.call_id];
+  _setHtml('tracker-card', renderCallCard(call, call.status === 'analyzed' && !!exp));
+}
+
+async function startTracking(callId) {
+  if (S.trackingInterval) clearInterval(S.trackingInterval);
+
+  const poll = async () => {
+    try {
+      const data = await API.call(callId);
+      S.trackedCallData = data;
+
+      // Auto-expand when analyzed
+      if (data.status === 'analyzed' && !S.expanded[callId]) {
+        S.expanded[callId] = { loading: true };
+        renderTrackerCard();
+        const [tr, an] = await Promise.allSettled([API.transcript(callId), API.analysis(callId)]);
+        S.expanded[callId] = {
+          transcript: tr.status === 'fulfilled' ? tr.value : null,
+          analysis:   an.status === 'fulfilled' ? an.value : null,
+        };
+      }
+
+      renderTrackerCard();
+
+      if (data.status === 'analyzed' || data.status?.startsWith('failed')) {
+        clearInterval(S.trackingInterval);
+        S.trackingInterval = null;
+        // Remove live badge
+        const lb = document.querySelector('#tracker-section .live-badge');
+        if (lb) lb.innerHTML = data.status === 'analyzed'
+          ? '<span style="color:#22c55e;">✅ Готово!</span>'
+          : '<span style="color:#f87171;">❌ Ошибка</span>';
+      }
+    } catch(e) { console.error('Tracking error:', e); }
+  };
+
+  await poll();
+  S.trackingInterval = setInterval(poll, 3000);
+}
+
+// ═══════════════════════════════════
+// GLOBAL REFRESH
+// ═══════════════════════════════════
+async function refresh() {
+  try {
+    // Health check
+    const h = await API.health();
+    const ok = h?.status === 'ok';
+    document.getElementById('health-dot').style.background = ok ? '#22c55e' : '#ef4444';
+    document.getElementById('health-text').textContent = ok ? 'API: работает' : 'API: недоступен';
+
+    // Parallel fetch
+    const [statsRes, callsRes, logsRes] = await Promise.allSettled([
+      API.stats(),
+      API.calls({ limit: 50 }),
+      API.logs({ limit: 100 }),
+    ]);
+
+    if (statsRes.status === 'fulfilled') S.stats = statsRes.value;
+    if (callsRes.status === 'fulfilled') S.calls = callsRes.value.calls || [];
+    if (logsRes.status === 'fulfilled')  S.logs  = logsRes.value.logs || [];
+
+    document.getElementById('last-refresh-time').textContent =
+      'Обновлено: ' + new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+    renderTab();
+  } catch(e) {
+    console.error('Refresh error:', e);
+  }
+}
+
+// ═══════════════════════════════════
+// UTIL
+// ═══════════════════════════════════
+function _setHtml(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+showTab('dashboard');
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
