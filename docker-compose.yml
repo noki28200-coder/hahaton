@@ -150,9 +150,9 @@ services:
       retries: 5
       start_period: 15s
 
-  # ── Сборщик записей из МангоОфис ────────────────────────────
+  # ── Сборщик записей из МангоОфис (Go) ──────────────────────
   mango-collector:
-    build: ./mango-collector
+    build: ./mango-collector-go
     restart: unless-stopped
     depends_on:
       postgres:
@@ -174,9 +174,24 @@ services:
       POLL_INTERVAL_SECONDS:    ${POLL_INTERVAL_SECONDS:-300}
       LOOKBACK_MINUTES:         ${LOOKBACK_MINUTES:-10}
 
-  # ── Транскрибация звонков (Whisper) ─────────────────────────
+  # ── WhisperX ML-сервис (Python, только инференс) ────────────
+  whisperx-service:
+    build: ./whisperx-service
+    restart: unless-stopped
+    environment:
+      WHISPER_MODEL:    ${WHISPER_MODEL:-medium}
+      WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-ru}
+      WHISPER_THREADS:  ${WHISPER_THREADS:-4}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Транскрибация звонков (Go) ───────────────────────────────
   transcriber:
-    build: ./transcriber
+    build: ./transcriber-go
     restart: unless-stopped
     depends_on:
       postgres:
@@ -185,6 +200,8 @@ services:
         condition: service_completed_successfully
       minio-init:
         condition: service_completed_successfully
+      whisperx-service:
+        condition: service_healthy
     environment:
       POSTGRES_DSN:     postgresql://${POSTGRES_USER:-callsuser}:${POSTGRES_PASSWORD:-callspassword}@postgres:5432/${POSTGRES_DB:-callsdb}
       KAFKA_BOOTSTRAP:  kafka:9092
@@ -192,13 +209,12 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET:     ${MINIO_BUCKET:-call-audios}
-      WHISPER_MODEL:    ${WHISPER_MODEL:-medium}
+      WHISPERX_URL:     http://whisperx-service:8001
       WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-ru}
-      WHISPER_THREADS:  ${WHISPER_THREADS:-4}
 
-  # ── Анализ транскрипций (Ollama / Gemma) ────────────────────
+  # ── Анализ транскрипций (Go + Ollama / Gemma) ────────────────
   analyzer:
-    build: ./analyzer
+    build: ./analyzer-go
     restart: unless-stopped
     depends_on:
       postgres:
