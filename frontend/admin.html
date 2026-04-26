@@ -2561,10 +2561,13 @@ function renderAnalysisTab(data) {
     el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);">Анализ ещё недоступен.<br><small>${escapeHtml(data._error)}</small></div>`;
     return;
   }
-  const sentimentColor = data.sentiment === 'positive' ? 'var(--accent-green)' : data.sentiment === 'negative' ? 'var(--accent-red)' : 'var(--accent-orange)';
+
+  const sentimentColor = { positive: 'var(--accent-green)', negative: 'var(--accent-red)', neutral: 'var(--accent-orange)' }[data.sentiment] || 'var(--text-secondary)';
   const sentimentLabel = { positive: '😊 Позитивный', neutral: '😐 Нейтральный', negative: '😞 Негативный' }[data.sentiment] || data.sentiment || '—';
-  const outcomeLabel = { sold: '✅ Продажа', callback: '📞 Перезвон', rejected: '❌ Отказ', escalated: '⚡ Эскалация', consultation: '💬 Консультация', other: '📋 Другое' }[data.call_outcome] || data.call_outcome || '—';
+  const outcomeLabel   = { sold: '✅ Продажа', callback: '📞 Перезвон', rejected: '❌ Отказ', escalated: '⚡ Эскалация', consultation: '💬 Консультация', other: '📋 Другое' }[data.call_outcome] || data.call_outcome || '—';
   const score = data.score;
+  // Score colour: red 1-3, orange 4-6, green 7-10
+  const scoreColor = score == null ? 'var(--accent-blue)' : score <= 3 ? 'var(--accent-red)' : score <= 6 ? 'var(--accent-orange)' : 'var(--accent-green)';
 
   el.innerHTML = `
     <div class="analysis-grid">
@@ -2579,8 +2582,8 @@ function renderAnalysisTab(data) {
       ${score != null ? `
       <div class="analysis-item">
         <div class="analysis-label">Оценка</div>
-        <div class="score-number">${score}<span style="font-size:14px;color:var(--text-muted);">/10</span></div>
-        <div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${score * 10}%;"></div></div></div>
+        <div class="score-number" style="color:${scoreColor};">${score}<span style="font-size:14px;color:var(--text-muted);">/10</span></div>
+        <div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" id="scoreBarFill" style="width:0%;background:linear-gradient(90deg,${scoreColor},${scoreColor}aa);"></div></div></div>
       </div>` : ''}
       <div class="analysis-item">
         <div class="analysis-label">Соответствие скрипту</div>
@@ -2594,19 +2597,27 @@ function renderAnalysisTab(data) {
       ${(data.topics || []).length ? `
       <div class="analysis-item full">
         <div class="analysis-label">Темы</div>
-        <div class="tag-list">${(data.topics).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+        <div class="tag-list">${data.topics.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
       </div>` : ''}
       ${(data.action_items || []).length ? `
       <div class="analysis-item full">
         <div class="analysis-label">Действия</div>
-        <div class="tag-list">${(data.action_items).map(t => `<span class="tag action-tag">${escapeHtml(t)}</span>`).join('')}</div>
+        <div class="tag-list">${data.action_items.map(t => `<span class="tag action-tag">${escapeHtml(t)}</span>`).join('')}</div>
       </div>` : ''}
       ${(data.script_violations || []).length ? `
       <div class="analysis-item full">
         <div class="analysis-label">Нарушения скрипта</div>
-        <div class="tag-list">${(data.script_violations).map(t => `<span class="tag violation-tag">${escapeHtml(t)}</span>`).join('')}</div>
+        <div class="tag-list">${data.script_violations.map(t => `<span class="tag violation-tag">${escapeHtml(t)}</span>`).join('')}</div>
       </div>` : ''}
     </div>`;
+
+  // Animate score bar after element is in DOM
+  if (score != null) {
+    requestAnimationFrame(() => {
+      const fill = document.getElementById('scoreBarFill');
+      if (fill) fill.style.width = (score * 10) + '%';
+    });
+  }
 }
 
 function closeModal() {
