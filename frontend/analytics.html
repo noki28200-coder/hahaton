@@ -458,20 +458,20 @@
     <nav class="sidebar-nav">
       <div class="nav-section-title">Основное</div>
       <a href="admin.html" class="nav-item">
-        <span class="nav-icon">📊</span> Дашборд
+        <span class="nav-icon"></span> Дашборд
       </a>
       <a href="admin.html" class="nav-item">
-        <span class="nav-icon">📞</span> История звонков
+        <span class="nav-icon"></span> История звонков
       </a>
       <a href="analytics.html" class="nav-item active">
-        <span class="nav-icon">📈</span> Аналитика
+        <span class="nav-icon"></span> Аналитика
       </a>
       <a href="admin.html" class="nav-item">
         <span class="nav-icon"></span> Специалисты
       </a>
       <div class="nav-section-title">Инструменты</div>
       <a href="admin.html" class="nav-item">
-        <span class="nav-icon">🔍</span> Умный поиск
+        <span class="nav-icon"></span> Умный поиск
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -490,15 +490,15 @@
         </div>
       </div>
       <div class="topbar-right">
-        <button class="topbar-btn" title="Обновить" onclick="refreshAnalytics()">🔄</button>
-        <button class="topbar-btn" title="Экспорт" onclick="exportAnalytics()">📥</button>
-        <button class="topbar-btn" title="Назад" onclick="window.location.href='admin.html'">⬅️</button>
+        <button class="topbar-btn" title="Обновить" onclick="refreshAnalytics()"></button>
+        <button class="topbar-btn" title="Экспорт" onclick="exportAnalytics()"></button>
+        <button class="topbar-btn" title="Назад" onclick="window.location.href='admin.html'"></button>
       </div>
     </header>
 
     <div class="page-content page-transition">
       <div class="page-header">
-        <h1 class="page-title">📈 Аналитика</h1>
+        <h1 class="page-title">Аналитика</h1>
         <p class="page-subtitle">Детальная статистика и анализ звонков</p>
       </div>
 
@@ -516,7 +516,7 @@
         <div class="analytics-card">
           <div class="analytics-card-header">
             <span class="analytics-card-title">Всего звонков</span>
-            <div class="analytics-card-icon" style="background:rgba(59,130,246,0.15);">📞</div>
+            <div class="analytics-card-icon" style="background:rgba(59,130,246,0.15);"></div>
           </div>
           <div class="analytics-card-value" id="analyticsTotal">—</div>
           <span class="analytics-card-change up" id="analyticsTotalChange">Загрузка…</span>
@@ -524,7 +524,7 @@
         <div class="analytics-card">
           <div class="analytics-card-header">
             <span class="analytics-card-title">Успешность</span>
-            <div class="analytics-card-icon" style="background:rgba(16,185,129,0.15);">✅</div>
+            <div class="analytics-card-icon" style="background:rgba(16,185,129,0.15);"></div>
           </div>
           <div class="analytics-card-value" id="analyticsSuccessRate">—</div>
           <span class="analytics-card-change up" id="analyticsRateChange">Загрузка…</span>
@@ -532,7 +532,7 @@
         <div class="analytics-card">
           <div class="analytics-card-header">
             <span class="analytics-card-title">Средняя длительность</span>
-            <div class="analytics-card-icon" style="background:rgba(245,158,11,0.15);">⏱️</div>
+            <div class="analytics-card-icon" style="background:rgba(245,158,11,0.15);"></div>
           </div>
           <div class="analytics-card-value" id="analyticsAvgDuration">—</div>
           <span class="analytics-card-change" id="analyticsDurChange">Загрузка…</span>
@@ -719,7 +719,7 @@ function _chartEmpty(container, message) {
   const W = container.offsetWidth || 400;
   const H = 280;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;">
-    <text x="${W/2}" y="${H/2 - 10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📊</text>
+    <text x="${W/2}" y="${H/2 - 10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif"></text>
     <text x="${W/2}" y="${H/2 + 20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">${message}</text>
   </svg>`;
 }
@@ -829,7 +829,7 @@ function renderLineChart() {
   const data = filteredByPeriod();
   if (!data.length) {
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.innerHTML = `<text x="${W/2}" y="${H/2-10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📈</text>
+    svg.innerHTML = `<text x="${W/2}" y="${H/2-10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif"></text>
       <text x="${W/2}" y="${H/2+20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">Нет данных за выбранный период</text>`;
     return;
   }
@@ -908,7 +908,7 @@ function renderDonutChart() {
 
   const data = filteredByPeriod();
   if (!data.length) {
-    svg.innerHTML = `<text x="100" y="90" text-anchor="middle" fill="#8892a8" font-size="28" font-family="Inter,sans-serif">📊</text><text x="100" y="115" text-anchor="middle" fill="#8892a8" font-size="11" font-family="Inter,sans-serif">Нет данных</text>`;
+    svg.innerHTML = `<text x="100" y="90" text-anchor="middle" fill="#8892a8" font-size="28" font-family="Inter,sans-serif"></text><text x="100" y="115" text-anchor="middle" fill="#8892a8" font-size="11" font-family="Inter,sans-serif">Нет данных</text>`;
     legend.innerHTML = '';
     return;
   }
@@ -988,7 +988,7 @@ function renderBarChart() {
   const data = filteredByPeriod();
 
   const EMPTY = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8892a8;flex-direction:column;gap:8px;">
-    <span style="font-size:28px;">📊</span><span style="font-size:13px;">Нет данных для отображения</span></div>`;
+    <span style="font-size:28px;"></span><span style="font-size:13px;">Нет данных для отображения</span></div>`;
 
   if (!data.length) {
     container.innerHTML = EMPTY;

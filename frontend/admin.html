@@ -1491,26 +1491,26 @@
     <nav class="sidebar-nav">
       <div class="nav-section-title">Основное</div>
       <a href="admin.html" class="nav-item active" data-page="dashboard">
-        <span class="nav-icon">📊</span>
+        <span class="nav-icon"></span>
         Дашборд
       </a>
       <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
-        <span class="nav-icon">📞</span>
+        <span class="nav-icon"></span>
         История звонков
         <span class="nav-expand-icon">▶</span>
       </div>
       <div class="nav-submenu">
-        <a href="#" class="nav-item" onclick="filterByStatus('analyzed')">✅ Проанализированные</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('transcribed')">🔤 Транскрибированные</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('stored')">💾 Сохранённые</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('pending')">⏳ Ожидание</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('analyzed')">Проанализированные</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('transcribed')">Транскрибированные</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('stored')">Сохранённые</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('pending')">Ожидание</a>
       </div>
       <a href="analytics.html" class="nav-item">
-        <span class="nav-icon">📈</span>
+        <span class="nav-icon"></span>
         Аналитика
       </a>
       <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
-        <span class="nav-icon">👥</span>
+        <span class="nav-icon"></span>
         Специалисты
         <span class="nav-expand-icon">▶</span>
       </div>
@@ -1519,7 +1519,7 @@
         <a href="#" class="nav-item">Отчёты</a>
       </div>
       <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
-        <span class="nav-icon">⚙️</span>
+        <span class="nav-icon"></span>
         Системная
         <span class="nav-expand-icon">▶</span>
       </div>
@@ -1531,7 +1531,7 @@
 
       <div class="nav-section-title">Инструменты</div>
       <a href="#" class="nav-item" id="smartSearchNav">
-        <span class="nav-icon">🔍</span>
+        <span class="nav-icon"></span>
         Умный поиск
       </a>
     </nav>
@@ -1551,9 +1551,9 @@
         </div>
       </div>
       <div class="topbar-right">
-        <button class="topbar-btn" title="Обновить" onclick="refreshData()">🔄</button>
-        <button class="topbar-btn has-notification" title="Уведомления">🔔</button>
-        <button class="topbar-btn" title="Настройки" onclick="window.location.href='analytics.html'">️</button>
+        <button class="topbar-btn" title="Обновить" onclick="refreshData()"></button>
+        <button class="topbar-btn has-notification" title="Уведомления"></button>
+        <button class="topbar-btn" title="Настройки" onclick="window.location.href='analytics.html'"></button>
       </div>
     </header>
 
@@ -1569,7 +1569,7 @@
         <div class="stat-card blue">
           <div class="stat-card-header">
             <span class="stat-label">История звонков</span>
-            <div class="stat-icon blue">📞</div>
+            <div class="stat-icon blue"></div>
           </div>
           <div class="stat-value" id="statTotalCalls">—</div>
           <span class="stat-change up" id="statCallsChange">Загрузка…</span>
@@ -1577,7 +1577,7 @@
         <div class="stat-card green">
           <div class="stat-card-header">
             <span class="stat-label">Успешные</span>
-            <div class="stat-icon green">✅</div>
+            <div class="stat-icon green"></div>
           </div>
           <div class="stat-value" id="statSuccess">—</div>
           <span class="stat-change up" id="statSuccessChange">Загрузка…</span>
@@ -1585,7 +1585,7 @@
         <div class="stat-card red">
           <div class="stat-card-header">
             <span class="stat-label">Ошибок</span>
-            <div class="stat-icon red">⚠️</div>
+            <div class="stat-icon red"></div>
           </div>
           <div class="stat-value" id="statErrors">—</div>
           <span class="stat-change down" id="statErrorsChange">Загрузка…</span>
@@ -1593,7 +1593,7 @@
         <div class="stat-card orange">
           <div class="stat-card-header">
             <span class="stat-label">Всего записей</span>
-            <div class="stat-icon orange">📁</div>
+            <div class="stat-icon orange"></div>
           </div>
           <div class="stat-value" id="statStorageMb">—</div>
           <span class="stat-change up" id="statStorageChange">Загрузка…</span>
@@ -1604,7 +1604,7 @@
       <div class="storage-card">
         <div class="storage-header">
           <div class="storage-title">
-            📀 Хранилище данных
+            Хранилище данных
           </div>
           <div class="storage-stats">
             <div class="storage-stat-item">
@@ -1626,12 +1626,12 @@
       <!-- Smart Search & Filters -->
       <div class="search-filter-section">
         <div class="search-filter-header">
-          <div class="search-filter-title">🔍 Умный поиск и фильтрация</div>
+          <div class="search-filter-title">Умный поиск и фильтрация</div>
         </div>
 
         <div class="search-container" id="searchContainer">
           <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"></span>
             <input
               type="text"
               class="search-input"
@@ -1649,21 +1649,21 @@
             <label class="filter-label">Статус</label>
             <select class="filter-select" id="filterStatus" onchange="applyFilters()">
               <option value="all">Все статусы</option>
-              <option value="analyzed">✅ Проанализирован</option>
-              <option value="transcribed">🔤 Транскрибирован</option>
-              <option value="stored">💾 Сохранён</option>
-              <option value="pending">⏳ Ожидание</option>
-              <option value="failed_analysis">❌ Ошибка анализа</option>
-              <option value="failed_transcription">❌ Ошибка транскрипции</option>
-              <option value="failed_download">❌ Ошибка загрузки</option>
+              <option value="analyzed">Проанализирован</option>
+              <option value="transcribed">Транскрибирован</option>
+              <option value="stored">Сохранён</option>
+              <option value="pending">Ожидание</option>
+              <option value="failed_analysis">Ошибка анализа</option>
+              <option value="failed_transcription">Ошибка транскрипции</option>
+              <option value="failed_download">Ошибка загрузки</option>
             </select>
           </div>
           <div class="filter-group">
             <label class="filter-label">Источник</label>
             <select class="filter-select" id="filterSource" onchange="applyFilters()">
               <option value="all">Все источники</option>
-              <option value="mango">📞 Mango Office</option>
-              <option value="manual">📤 Ручная загрузка</option>
+              <option value="mango">Mango Office</option>
+              <option value="manual">Ручная загрузка</option>
             </select>
           </div>
           <div class="filter-group">
@@ -1689,11 +1689,11 @@
         </div>
 
         <div class="filter-chips">
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'analyzed')">✅ Проанализированы</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'transcribed')">🔤 Транскрибированы</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'stored')">💾 Сохранены</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'pending')">⏳ Ожидание</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'large')">📦 Крупные файлы (&gt;3МБ)</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'analyzed')">Проанализированы</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'transcribed')">Транскрибированы</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'stored')">Сохранены</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'pending')">Ожидание</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'large')">Крупные файлы (&gt;3МБ)</span>
         </div>
 
         <div class="active-filters-display" id="activeFiltersDisplay"></div>
@@ -1710,9 +1710,9 @@
             <span class="badge" id="tableBadge">…</span>
           </div>
           <div class="table-actions">
-            <button class="table-btn" onclick="exportTable()">📥 Экспорт</button>
-            <button class="table-btn" onclick="openImportModal()">📤 Импорт</button>
-            <button class="table-btn primary" onclick="refreshTable()">🔄 Обновить</button>
+            <button class="table-btn" onclick="exportTable()">Экспорт</button>
+            <button class="table-btn" onclick="openImportModal()">Импорт</button>
+            <button class="table-btn primary" onclick="refreshTable()">Обновить</button>
           </div>
         </div>
 
@@ -1736,7 +1736,7 @@
         </div>
 
         <div id="emptyState" class="empty-state" style="display:none;">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon"></div>
           <h3>Ничего не найдено</h3>
           <p>Попробуйте изменить параметры поиска или фильтры</p>
         </div>
@@ -1793,7 +1793,7 @@
     </div>
     <div class="modal-body">
       <div id="importDropzone" class="import-dropzone" onclick="document.getElementById('importFileInput').click()" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
-        <div class="import-dropzone-icon">📁</div>
+        <div class="import-dropzone-icon"></div>
         <div class="import-dropzone-text">Нажмите или перетащите MP3-файл</div>
         <div class="import-dropzone-hint" id="importFileName">Поддерживается формат MP3, до 200 МБ</div>
       </div>
@@ -1829,7 +1829,7 @@
     </div>
     <div class="modal-footer">
       <button class="modal-footer-btn" onclick="closeImportModal()">Отмена</button>
-      <button class="modal-footer-btn primary" id="importSubmitBtn" onclick="submitImport()" disabled>📤 Загрузить</button>
+      <button class="modal-footer-btn primary" id="importSubmitBtn" onclick="submitImport()" disabled>Загрузить</button>
     </div>
   </div>
 </div>
@@ -1842,10 +1842,10 @@
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-tabs">
-      <button class="modal-tab active" onclick="switchTab('info', this)">📋 Информация</button>
-      <button class="modal-tab" onclick="switchTab('transcript', this)">🔤 Транскрипция</button>
-      <button class="modal-tab" onclick="switchTab('analysis', this)">🧠 Аналитика</button>
-      <button class="modal-tab" onclick="switchTab('audio', this)">🎵 Аудио</button>
+      <button class="modal-tab active" onclick="switchTab('info', this)">Информация</button>
+      <button class="modal-tab" onclick="switchTab('transcript', this)">Транскрипция</button>
+      <button class="modal-tab" onclick="switchTab('analysis', this)">Аналитика</button>
+      <button class="modal-tab" onclick="switchTab('audio', this)">Аудио</button>
     </div>
     <div class="modal-body">
       <div id="tabInfo" class="modal-tab-panel active"></div>
@@ -1855,7 +1855,7 @@
     </div>
     <div class="modal-footer">
       <button class="modal-footer-btn" onclick="closeModal()">Закрыть</button>
-      <button class="modal-footer-btn primary" id="audioDownloadBtn" style="display:none;">⬇️ Скачать аудио</button>
+      <button class="modal-footer-btn primary" id="audioDownloadBtn" style="display:none;">Скачать аудио</button>
     </div>
   </div>
 </div>
@@ -2070,7 +2070,7 @@ function showSuggestions(query) {
         suggestionsEl.innerHTML = results.map(c => {
           const item = mapCall(c);
           const statusLabel = getStatusLabel(item.status);
-          const icon = item.status === 'analyzed' ? '✅' : item.status.startsWith('failed') ? '❌' : item.status === 'transcribed' ? '🔤' : '⏳';
+          const icon = item.status === 'analyzed' ? '✓' : item.status.startsWith('failed') ? '✗' : item.status === 'transcribed' ? '~' : '…';
           const snippetHtml = c.transcript_snippet
             ? `<small class="suggestion-snippet">${highlightMatch(c.transcript_snippet, query)}</small>`
             : '';
@@ -2476,11 +2476,11 @@ async function showCallDetail(id) {
       <div class="modal-detail-item"><span class="modal-detail-label">Дата создания</span>
         <span class="modal-detail-value">${formatDate(call.date)} ${call.time}</span></div>
       <div class="modal-detail-item"><span class="modal-detail-label">Источник</span>
-        <span class="modal-detail-value">${call.source === 'mango' ? '📞 Mango Office' : '📤 Ручная загрузка'}</span></div>
+        <span class="modal-detail-value">${call.source === 'mango' ? 'Mango Office' : 'Ручная загрузка'}</span></div>
       <div class="modal-detail-item"><span class="modal-detail-label">Сотрудник</span>
         <span class="modal-detail-value">${escapeHtml(call.employee_name)}</span></div>
       <div class="modal-detail-item"><span class="modal-detail-label">Направление</span>
-        <span class="modal-detail-value">${call.direction === 'inbound' ? '📥 Входящий' : call.direction === 'outbound' ? '📤 Исходящий' : '—'}</span></div>
+        <span class="modal-detail-value">${call.direction === 'inbound' ? 'Входящий' : call.direction === 'outbound' ? 'Исходящий' : '—'}</span></div>
       <div class="modal-detail-item"><span class="modal-detail-label">Звонящий</span>
         <span class="modal-detail-value" style="font-family:monospace;">${escapeHtml(call.phone_from)}</span></div>
       <div class="modal-detail-item"><span class="modal-detail-label">Принимающий</span>
@@ -2496,10 +2496,10 @@ async function showCallDetail(id) {
     </div>`;
 
   // Transcript tab — lazy load
-  document.getElementById('tabTranscript').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">⏳ Загрузка транскрипции…</div>';
+  document.getElementById('tabTranscript').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Загрузка транскрипции…</div>';
 
   // Analysis tab — lazy load
-  document.getElementById('tabAnalysis').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">⏳ Загрузка аналитики…</div>';
+  document.getElementById('tabAnalysis').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Загрузка аналитики…</div>';
 
   // Audio tab
   document.getElementById('tabAudio').innerHTML = `
@@ -2563,8 +2563,8 @@ function renderAnalysisTab(data) {
   }
 
   const sentimentColor = { positive: 'var(--accent-green)', negative: 'var(--accent-red)', neutral: 'var(--accent-orange)' }[data.sentiment] || 'var(--text-secondary)';
-  const sentimentLabel = { positive: '😊 Позитивный', neutral: '😐 Нейтральный', negative: '😞 Негативный' }[data.sentiment] || data.sentiment || '—';
-  const outcomeLabel   = { sold: '✅ Продажа', callback: '📞 Перезвон', rejected: '❌ Отказ', escalated: '⚡ Эскалация', consultation: '💬 Консультация', other: '📋 Другое' }[data.call_outcome] || data.call_outcome || '—';
+  const sentimentLabel = { positive: 'Позитивный', neutral: 'Нейтральный', negative: 'Негативный' }[data.sentiment] || data.sentiment || '—';
+  const outcomeLabel   = { sold: 'Продажа', callback: 'Перезвон', rejected: 'Отказ', escalated: 'Эскалация', consultation: 'Консультация', other: 'Другое' }[data.call_outcome] || data.call_outcome || '—';
   const score = data.score;
   // Score colour: red 1-3, orange 4-6, green 7-10
   const scoreColor = score == null ? 'var(--accent-blue)' : score <= 3 ? 'var(--accent-red)' : score <= 6 ? 'var(--accent-orange)' : 'var(--accent-green)';
@@ -2587,7 +2587,7 @@ function renderAnalysisTab(data) {
       </div>` : ''}
       <div class="analysis-item">
         <div class="analysis-label">Соответствие скрипту</div>
-        <div class="analysis-value">${data.script_compliance === true ? '✅ Да' : data.script_compliance === false ? '❌ Нет' : '—'}</div>
+        <div class="analysis-value">${data.script_compliance === true ? 'Да' : data.script_compliance === false ? 'Нет' : '—'}</div>
       </div>
       ${data.summary ? `
       <div class="analysis-item full">
@@ -2724,7 +2724,7 @@ function setImportFile(file) {
   _importFile = file;
   const dropzone = document.getElementById('importDropzone');
   dropzone.className = 'import-dropzone has-file';
-  document.getElementById('importDropzone').querySelector('.import-dropzone-icon').textContent = '🎵';
+  document.getElementById('importDropzone').querySelector('.import-dropzone-icon').textContent = '';
   document.getElementById('importFileName').textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`;
   document.getElementById('importSubmitBtn').disabled = false;
 }
@@ -2853,7 +2853,7 @@ function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const icons = { success: '✓', error: '✗', info: 'i' };
   toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
