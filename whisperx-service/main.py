@@ -40,52 +40,24 @@ _model: WhisperModel = None
 def _prepare_audio(data: bytes) -> np.ndarray:
     """Декодировать аудио → 16kHz моно float32."""
     container = av.open(BytesIO(data))
-    stream = container.streams.audio[0]
-
-    graph = av.filter.Graph()
-    source = graph.add_abuffer(
-        sample_rate=stream.rate,
-        format=stream.format.name,
-        layout=stream.layout.name if stream.layout else None,
-        time_base=stream.time_base,
-    )
-    hpass = graph.add("highpass", f="200")
-    resample = graph.add("aresample", "16000")
-    sink = graph.add("abuffersink")
-
-    source.link_to(hpass)
-    hpass.link_to(resample)
-    resample.link_to(sink)
-    graph.configure()
+    resampler = av.AudioResampler(format="fltp", layout="mono", rate=16000)
 
     frames = []
     for frame in container.decode(audio=0):
-        graph.push(frame)
-        while True:
-            try:
-                ff = graph.pull()
-            except (av.error.BlockingIOError, BlockingIOError, av.EOFError):
-                break
-            arr = ff.to_ndarray()
-            if arr.ndim > 1:
-                arr = arr.mean(axis=0)
-            frames.append(arr.astype(np.float32))
+        frame.pts = None  # AudioResampler требует pts=None
+        for rf in resampler.resample(frame):
+            arr = rf.to_ndarray()  # shape: (1, samples) — mono fltp
+            frames.append(arr[0].astype(np.float32))
 
-    graph.push(None)
-    while True:
-        try:
-            ff = graph.pull()
-        except (av.error.BlockingIOError, BlockingIOError, av.EOFError):
-            break
-        arr = ff.to_ndarray()
-        if arr.ndim > 1:
-            arr = arr.mean(axis=0)
-        frames.append(arr.astype(np.float32))
+    # Слить хвост из буфера ресемплера
+    for rf in resampler.resample(None):
+        arr = rf.to_ndarray()
+        frames.append(arr[0].astype(np.float32))
 
     container.close()
 
     audio = np.concatenate(frames) if frames else np.array([], dtype=np.float32)
-    mx = np.max(np.abs(audio)) if audio.size else 0
+    mx = float(np.max(np.abs(audio))) if audio.size else 0.0
     if mx > 0:
         audio = audio / mx
     return audio

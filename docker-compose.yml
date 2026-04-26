@@ -35,7 +35,7 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "mc alias set local http://localhost:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD 2>/dev/null && mc ready local"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -111,13 +111,15 @@ services:
     restart: unless-stopped
     ports:
       - "11434:11434"
+    environment:
+      OLLAMA_KEEP_ALIVE: -1
     volumes:
       - ollama_models:/root/.ollama
     healthcheck:
-      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
       interval: 20s
       timeout: 10s
-      retries: 10
+      retries: 15
       start_period: 30s
 
   # ════════════════════════════════════════════════════════════

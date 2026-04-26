@@ -19,12 +19,16 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+// jsonExtractRe matches the first {...} block in a string (handles markdown fences)
+var jsonExtractRe = regexp.MustCompile(`(?s)\{.*\}`)
 
 // ── конфигурация ────────────────────────────────────────────────
 
@@ -144,37 +148,81 @@ func analyzeWithOllama(ctx context.Context, client *http.Client, ollamaHost, mod
 		return nil, fmt.Errorf("parse ollama response: %w", err)
 	}
 
-	var result AnalysisResult
-	if err := json.Unmarshal([]byte(ollamaResp.Response), &result); err != nil {
-		return nil, fmt.Errorf("parse analysis json: %w (raw: %s)", err, ollamaResp.Response)
+	raw := ollamaResp.Response
+
+	// Извлекаем JSON даже если модель завернула его в markdown-фенсы (```json ... ```)
+	if match := jsonExtractRe.FindString(raw); match != "" {
+		raw = match
 	}
+
+	var result AnalysisResult
+	if err := json.Unmarshal([]byte(raw), &result); err != nil {
+		return nil, fmt.Errorf("parse analysis json: %w (raw: %.200s)", err, raw)
+	}
+
+	// Нормализуем поля: Ollama иногда возвращает невалидные значения
+	switch result.Sentiment {
+	case "positive", "neutral", "negative":
+	default:
+		result.Sentiment = "neutral"
+	}
+	if result.Score < 1 || result.Score > 10 {
+		result.Score = 5
+	}
+	validOutcomes := map[string]bool{
+		"sold": true, "callback": true, "rejected": true,
+		"escalated": true, "consultation": true, "other": true,
+	}
+	if !validOutcomes[result.CallOutcome] {
+		result.CallOutcome = "other"
+	}
+	if result.Summary == "" {
+		result.Summary = "Анализ выполнен"
+	}
+	if result.ScriptViolations == nil {
+		result.ScriptViolations = []string{}
+	}
+	if result.ActionItems == nil {
+		result.ActionItems = []string{}
+	}
+	if result.Topics == nil {
+		result.Topics = []string{}
+	}
+
 	return &result, nil
 }
 
-func pullModel(ctx context.Context, client *http.Client, ollamaHost, model string) {
+// ensureModel проверяет наличие модели через /api/tags и скачивает её если нужно.
+func ensureModel(ctx context.Context, client *http.Client, ollamaHost, model string) {
 	slog.Info("проверяю наличие модели", "model", model)
 
-	// Пробуем quick check
-	checkBody, _ := json.Marshal(map[string]any{
-		"model": model, "prompt": "hi", "stream": false,
-	})
-	req, _ := http.NewRequestWithContext(ctx, "POST", ollamaHost+"/api/generate", bytes.NewReader(checkBody))
-	req.Header.Set("Content-Type", "application/json")
-	checkCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	checkCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	req = req.WithContext(checkCtx)
-	if resp, err := client.Do(req); err == nil && resp.StatusCode == 200 {
-		resp.Body.Close()
-		slog.Info("модель готова", "model", model)
-		return
+	req, _ := http.NewRequestWithContext(checkCtx, "GET", ollamaHost+"/api/tags", nil)
+	if resp, err := client.Do(req); err == nil {
+		defer resp.Body.Close()
+		var tags struct {
+			Models []struct {
+				Name string `json:"name"`
+			} `json:"models"`
+		}
+		if jsonErr := json.NewDecoder(resp.Body).Decode(&tags); jsonErr == nil {
+			for _, m := range tags.Models {
+				// Ollama возвращает имена в формате "gemma3:4b" или "gemma3:4b-instruct-q4_K_M"
+				if m.Name == model || strings.HasPrefix(m.Name, strings.Split(model, ":")[0]+":") {
+					slog.Info("модель уже загружена", "model", m.Name)
+					return
+				}
+			}
+		}
 	}
 
 	slog.Info("скачиваю модель (может занять несколько минут)...", "model", model)
-	pullBody, _ := json.Marshal(map[string]any{"name": model})
+	pullBody, _ := json.Marshal(map[string]any{"name": model, "stream": true})
+	pullClient := &http.Client{Timeout: 1200 * time.Second}
 	pullReq, _ := http.NewRequestWithContext(ctx, "POST", ollamaHost+"/api/pull", bytes.NewReader(pullBody))
 	pullReq.Header.Set("Content-Type", "application/json")
 
-	pullClient := &http.Client{Timeout: 600 * time.Second}
 	resp, err := pullClient.Do(pullReq)
 	if err != nil {
 		slog.Warn("pull model error", "err", err)
@@ -189,12 +237,10 @@ func pullModel(ctx context.Context, client *http.Client, ollamaHost, model strin
 			break
 		}
 		if status, ok := line["status"].(string); ok {
-			if strings.ContainsAny(status, "pulling verifying success error") {
-				slog.Info("ollama pull", "status", status)
-			}
+			slog.Info("ollama pull", "status", status)
 		}
 	}
-	slog.Info("модель готова", "model", model)
+	slog.Info("скачивание модели завершено", "model", model)
 }
 
 // ── CRM вебхук ──────────────────────────────────────────────────
@@ -269,6 +315,11 @@ func processRecord(
 	if strings.TrimSpace(fullText) == "" {
 		slog.Warn("пустая транскрипция, пропускаю", "call_id", callID)
 		return nil
+	}
+	// Ограничиваем длину транскрипции чтобы не выйти за контекст модели (~6000 символов ≈ ~1500 токенов)
+	const maxTranscriptChars = 6000
+	if len(fullText) > maxTranscriptChars {
+		fullText = fullText[:maxTranscriptChars] + "\n...[текст обрезан]"
 	}
 
 	empName := event.EmployeeName
@@ -386,7 +437,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	httpClient := &http.Client{Timeout: 180 * time.Second}
+	httpClient := &http.Client{Timeout: 300 * time.Second}
 
 	// Ждём Ollama и скачиваем модель
 	for i := range 20 {
@@ -402,7 +453,7 @@ func main() {
 		slog.Warn("ollama ожидание", "attempt", i+1)
 		time.Sleep(5 * time.Second)
 	}
-	pullModel(ctx, httpClient, ollamaHost, ollamaModel)
+	ensureModel(ctx, httpClient, ollamaHost, ollamaModel)
 
 	// Kafka consumer + producer
 	kClient, err := kgo.NewClient(

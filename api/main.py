@@ -184,10 +184,12 @@ def upload_call(
     - **phone_to** — Номер принимающего
     - **direction** — Направление: inbound | outbound
     """
-    is_audio = file.content_type and "audio" in file.content_type
-    is_mp3 = file.filename and file.filename.lower().endswith(".mp3")
-    if not is_audio and not is_mp3:
-        raise HTTPException(status_code=400, detail="Принимаются только аудио MP3 файлы")
+    AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".mp4", ".aac", ".flac", ".webm"}
+    fname = (file.filename or "").lower()
+    ext = "." + fname.rsplit(".", 1)[-1] if "." in fname else ""
+    is_audio_ct = file.content_type and ("audio" in file.content_type or "video" in file.content_type)
+    if ext not in AUDIO_EXTENSIONS and not is_audio_ct:
+        raise HTTPException(status_code=400, detail=f"Принимаются аудиофайлы: {', '.join(sorted(AUDIO_EXTENSIONS))}")
 
     contents = file.file.read()
     if not contents:
@@ -195,10 +197,12 @@ def upload_call(
 
     call_id = str(uuid.uuid4())
     today = datetime.utcnow().strftime("%Y-%m-%d")
-    object_key = f"calls/{today}/{call_id}.mp3"
+    safe_ext = ext if ext in AUDIO_EXTENSIONS else ".mp3"
+    object_key = f"calls/{today}/{call_id}{safe_ext}"
 
+    content_type = file.content_type or "audio/mpeg"
     # Сохраняем в MinIO
-    _minio.put_object(Bucket=BUCKET, Key=object_key, Body=contents, ContentType="audio/mpeg")
+    _minio.put_object(Bucket=BUCKET, Key=object_key, Body=contents, ContentType=content_type)
 
     # Пишем в PostgreSQL
     with conn.cursor() as cur:
