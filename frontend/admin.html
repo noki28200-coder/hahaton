@@ -631,10 +631,20 @@
     font-size: 14px;
   }
 
-  .suggestion-item .s-text { flex: 1; }
+  .suggestion-item .s-text { flex: 1; min-width: 0; }
   .suggestion-item .s-text strong { color: var(--text-primary); }
   .suggestion-item .s-text small { color: var(--text-muted); display: block; font-size: 11px; }
-  .suggestion-item .s-id { color: var(--text-muted); font-size: 11px; }
+  .suggestion-item .s-id { color: var(--text-muted); font-size: 11px; flex-shrink: 0; }
+  .suggestion-snippet {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin-top: 2px;
+  }
 
   .filters-row {
     display: flex;
@@ -919,25 +929,129 @@
     white-space: nowrap;
   }
 
-  .status-badge.success {
+  .status-badge.analyzed {
     background: rgba(16,185,129,0.12);
     color: var(--accent-green);
   }
 
-  .status-badge.failed {
-    background: rgba(239,68,68,0.12);
-    color: var(--accent-red);
+  .status-badge.transcribed {
+    background: rgba(6,182,212,0.12);
+    color: var(--accent-cyan);
   }
 
-  .status-badge.processing {
-    background: rgba(245,158,11,0.12);
-    color: var(--accent-orange);
+  .status-badge.stored {
+    background: rgba(59,130,246,0.12);
+    color: var(--accent-blue);
+  }
+
+  .status-badge.failed, .status-badge.failed_download,
+  .status-badge.failed_transcription, .status-badge.failed_analysis {
+    background: rgba(239,68,68,0.12);
+    color: var(--accent-red);
   }
 
   .status-badge.pending {
     background: rgba(139,92,246,0.12);
     color: var(--accent-purple);
   }
+
+  /* Modal tabs */
+  .modal-tabs {
+    display: flex; gap: 4px; padding: 0 24px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .modal-tab {
+    padding: 10px 16px; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary); cursor: pointer; border: none;
+    background: none; font-family: inherit;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all var(--transition-fast);
+  }
+
+  .modal-tab:hover { color: var(--text-primary); }
+
+  .modal-tab.active {
+    color: var(--accent-blue); border-bottom-color: var(--accent-blue); font-weight: 600;
+  }
+
+  .modal-tab-panel { display: none; }
+  .modal-tab-panel.active { display: block; }
+
+  .transcript-block {
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); padding: 16px; font-size: 13px;
+    line-height: 1.7; color: var(--text-primary); white-space: pre-wrap;
+    max-height: 320px; overflow-y: auto; margin-top: 12px;
+  }
+
+  .segment-item {
+    display: flex; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border-color); font-size: 12px;
+  }
+
+  .segment-item:last-child { border-bottom: none; }
+
+  .segment-time {
+    color: var(--accent-blue); font-family: monospace; white-space: nowrap;
+    min-width: 80px; font-size: 11px; padding-top: 2px;
+  }
+
+  .segment-text { color: var(--text-primary); line-height: 1.5; }
+
+  .analysis-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;
+  }
+
+  .analysis-item {
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); padding: 12px;
+  }
+
+  .analysis-item.full { grid-column: 1 / -1; }
+
+  .analysis-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px;
+  }
+
+  .analysis-value { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+
+  .analysis-summary {
+    font-size: 13px; line-height: 1.6; color: var(--text-primary);
+    white-space: pre-wrap;
+  }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+  .tag {
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+    background: rgba(59,130,246,0.1); color: var(--accent-blue);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  .violation-tag {
+    background: rgba(239,68,68,0.1); color: var(--accent-red);
+    border-color: rgba(239,68,68,0.2);
+  }
+
+  .action-tag {
+    background: rgba(245,158,11,0.1); color: var(--accent-orange);
+    border-color: rgba(245,158,11,0.2);
+  }
+
+  .score-bar-wrap { margin-top: 6px; }
+  .score-bar-bg {
+    height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+    transition: width 0.8s ease;
+  }
+  .score-number { font-size: 22px; font-weight: 800; color: var(--accent-blue); }
+
+  .audio-player-wrap { padding: 16px 0; }
+  .audio-player-wrap audio { width: 100%; border-radius: var(--radius-sm); }
 
   .status-badge .status-dot {
     width: 6px;
@@ -1181,6 +1295,31 @@
     background: var(--accent-blue-hover);
   }
 
+  /* Import Modal */
+  .import-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+    margin-bottom: 16px;
+  }
+  .import-dropzone:hover, .import-dropzone.drag-over {
+    border-color: var(--accent-blue);
+    background: rgba(59,130,246,0.05);
+  }
+  .import-dropzone.has-file { border-color: var(--accent-green); background: rgba(16,185,129,0.05); }
+  .import-dropzone-icon { font-size: 32px; margin-bottom: 8px; }
+  .import-dropzone-text { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .import-dropzone-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .import-fields { display: flex; flex-direction: column; gap: 12px; }
+  .import-field { display: flex; flex-direction: column; gap: 4px; }
+  .import-field label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .import-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .import-progress-bar { height: 6px; background: var(--bg-card); border-radius: 3px; overflow: hidden; }
+  .import-progress-bar > div { height: 100%; background: var(--accent-blue); border-radius: 3px; width: 0%; transition: width 0.3s ease; }
+
   /* Footer */
   .app-footer {
     padding: 20px 32px;
@@ -1361,10 +1500,10 @@
         <span class="nav-expand-icon">▶</span>
       </div>
       <div class="nav-submenu">
-        <a href="#" class="nav-item" onclick="filterByStatus('success')">✅ Успешные</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('failed')">❌ Провальные</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('processing')">⚙️ Обработка</a>
-        <a href="#" class="nav-item" onclick="filterByStatus('pending')"> Ожидание</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('analyzed')">✅ Проанализированные</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('transcribed')">🔤 Транскрибированные</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('stored')">💾 Сохранённые</a>
+        <a href="#" class="nav-item" onclick="filterByStatus('pending')">⏳ Ожидание</a>
       </div>
       <a href="analytics.html" class="nav-item">
         <span class="nav-icon">📈</span>
@@ -1432,32 +1571,32 @@
             <span class="stat-label">История звонков</span>
             <div class="stat-icon blue">📞</div>
           </div>
-          <div class="stat-value" id="statTotalCalls">50</div>
-          <span class="stat-change up">↑ 12% рост</span>
+          <div class="stat-value" id="statTotalCalls">—</div>
+          <span class="stat-change up" id="statCallsChange">Загрузка…</span>
         </div>
         <div class="stat-card green">
           <div class="stat-card-header">
             <span class="stat-label">Успешные</span>
             <div class="stat-icon green">✅</div>
           </div>
-          <div class="stat-value" id="statSuccess">32</div>
-          <span class="stat-change up">↑ 8%</span>
+          <div class="stat-value" id="statSuccess">—</div>
+          <span class="stat-change up" id="statSuccessChange">Загрузка…</span>
         </div>
         <div class="stat-card red">
           <div class="stat-card-header">
             <span class="stat-label">Ошибок</span>
-            <div class="stat-icon red"></div>
+            <div class="stat-icon red">⚠️</div>
           </div>
-          <div class="stat-value" id="statErrors">678</div>
-          <span class="stat-change down">↑ 3% за неделю</span>
+          <div class="stat-value" id="statErrors">—</div>
+          <span class="stat-change down" id="statErrorsChange">Загрузка…</span>
         </div>
         <div class="stat-card orange">
           <div class="stat-card-header">
             <span class="stat-label">Всего записей</span>
             <div class="stat-icon orange">📁</div>
           </div>
-          <div class="stat-value">1,245</div>
-          <span class="stat-change up">↑ 12% рост</span>
+          <div class="stat-value" id="statStorageMb">—</div>
+          <span class="stat-change up" id="statStorageChange">Загрузка…</span>
         </div>
       </div>
 
@@ -1470,17 +1609,17 @@
           <div class="storage-stats">
             <div class="storage-stat-item">
               <div class="storage-dot used"></div>
-              <span>Использовано: 331.8 ГБ (65%)</span>
+              <span>Использовано: —</span>
             </div>
             <div class="storage-stat-item">
               <div class="storage-dot free"></div>
-              <span>Свободно: 180.2 ГБ (35%)</span>
+              <span>Свободно: —</span>
             </div>
           </div>
         </div>
         <div class="storage-bar-container">
-          <div class="storage-bar-used" style="width: 65%"></div>
-          <div class="storage-bar-free" style="width: 35%"></div>
+          <div class="storage-bar-used" style="width: 0%"></div>
+          <div class="storage-bar-free" style="width: 100%"></div>
         </div>
       </div>
 
@@ -1510,21 +1649,21 @@
             <label class="filter-label">Статус</label>
             <select class="filter-select" id="filterStatus" onchange="applyFilters()">
               <option value="all">Все статусы</option>
-              <option value="success">✅ Успешные</option>
-              <option value="failed">❌ Провальные</option>
-              <option value="processing">️ Обработка</option>
+              <option value="analyzed">✅ Проанализирован</option>
+              <option value="transcribed">🔤 Транскрибирован</option>
+              <option value="stored">💾 Сохранён</option>
               <option value="pending">⏳ Ожидание</option>
+              <option value="failed_analysis">❌ Ошибка анализа</option>
+              <option value="failed_transcription">❌ Ошибка транскрипции</option>
+              <option value="failed_download">❌ Ошибка загрузки</option>
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">Результат</label>
-            <select class="filter-select" id="filterResult" onchange="applyFilters()">
-              <option value="all">Все результаты</option>
-              <option value="transciation">Транзакция завершена</option>
-              <option value="error">Ошибка</option>
-              <option value="sync">Синхронизация</option>
-              <option value="export">Экспорт отчёта</option>
-              <option value="import">Импорт данных</option>
+            <label class="filter-label">Источник</label>
+            <select class="filter-select" id="filterSource" onchange="applyFilters()">
+              <option value="all">Все источники</option>
+              <option value="mango">📞 Mango Office</option>
+              <option value="manual">📤 Ручная загрузка</option>
             </select>
           </div>
           <div class="filter-group">
@@ -1550,11 +1689,11 @@
         </div>
 
         <div class="filter-chips">
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'success')">✅ Успешные</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'failed')">❌ Провальные</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'processing')">⚙️ Обработка</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'analyzed')">✅ Проанализированы</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'transcribed')">🔤 Транскрибированы</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'stored')">💾 Сохранены</span>
           <span class="filter-chip" onclick="toggleChipFilter(this, 'pending')">⏳ Ожидание</span>
-          <span class="filter-chip" onclick="toggleChipFilter(this, 'large')">📦 Крупные файлы (>3MB)</span>
+          <span class="filter-chip" onclick="toggleChipFilter(this, 'large')">📦 Крупные файлы (&gt;3МБ)</span>
         </div>
 
         <div class="active-filters-display" id="activeFiltersDisplay"></div>
@@ -1568,10 +1707,11 @@
         <div class="table-header">
           <div class="table-title">
             Все звонки
-            <span class="badge" id="tableBadge">50</span>
+            <span class="badge" id="tableBadge">…</span>
           </div>
           <div class="table-actions">
             <button class="table-btn" onclick="exportTable()">📥 Экспорт</button>
+            <button class="table-btn" onclick="openImportModal()">📤 Импорт</button>
             <button class="table-btn primary" onclick="refreshTable()">🔄 Обновить</button>
           </div>
         </div>
@@ -1580,12 +1720,13 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th onclick="sortTable('id')">ID <span class="sort-icon"></span></th>
+                <th onclick="sortTable('id')">ID <span class="sort-icon">↕</span></th>
                 <th onclick="sortTable('date')">Дата / Время <span class="sort-icon">↕</span></th>
-                <th onclick="sortTable('status')">Статус <span class="sort-icon"></span></th>
-                <th onclick="sortTable('result')">Результат <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('status')">Статус <span class="sort-icon">↕</span></th>
+                <th>Сотрудник</th>
+                <th>Телефон</th>
                 <th onclick="sortTable('size')">Размер <span class="sort-icon">↕</span></th>
-                <th onclick="sortTable('lastReview')">Крайний обзор <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('duration')">Длит. <span class="sort-icon">↕</span></th>
                 <th>Действия</th>
               </tr>
             </thead>
@@ -1611,7 +1752,7 @@
         <div class="table-header">
           <div class="table-title">
             Последние операции
-            <span class="badge">4</span>
+            <span class="badge" id="recentBadge">…</span>
           </div>
         </div>
         <div style="overflow-x: auto;">
@@ -1643,18 +1784,78 @@
   </main>
 </div>
 
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Импорт звонка</h3>
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="importDropzone" class="import-dropzone" onclick="document.getElementById('importFileInput').click()" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
+        <div class="import-dropzone-icon">📁</div>
+        <div class="import-dropzone-text">Нажмите или перетащите MP3-файл</div>
+        <div class="import-dropzone-hint" id="importFileName">Поддерживается формат MP3, до 200 МБ</div>
+      </div>
+      <input type="file" id="importFileInput" accept=".mp3,audio/*" style="display:none;" onchange="importFileSelected(event)">
+      <div class="import-fields">
+        <div class="import-field">
+          <label>Сотрудник</label>
+          <input type="text" id="importEmployeeName" placeholder="Имя сотрудника" class="filter-select" style="width:100%;">
+        </div>
+        <div class="import-field-row">
+          <div class="import-field">
+            <label>Телефон (от)</label>
+            <input type="text" id="importPhoneFrom" placeholder="+7..." class="filter-select" style="width:100%;">
+          </div>
+          <div class="import-field">
+            <label>Телефон (до)</label>
+            <input type="text" id="importPhoneTo" placeholder="+7..." class="filter-select" style="width:100%;">
+          </div>
+        </div>
+        <div class="import-field">
+          <label>Направление</label>
+          <select id="importDirection" class="filter-select" style="width:100%;">
+            <option value="">— не указано —</option>
+            <option value="inbound">Входящий</option>
+            <option value="outbound">Исходящий</option>
+          </select>
+        </div>
+      </div>
+      <div id="importProgress" style="display:none;margin-top:12px;">
+        <div class="import-progress-bar"><div id="importProgressFill"></div></div>
+        <div id="importProgressText" style="font-size:12px;color:var(--text-muted);margin-top:6px;text-align:center;">Загрузка…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-footer-btn" onclick="closeImportModal()">Отмена</button>
+      <button class="modal-footer-btn primary" id="importSubmitBtn" onclick="submitImport()" disabled>📤 Загрузить</button>
+    </div>
+  </div>
+</div>
+
 <!-- Call Detail Modal -->
 <div class="modal-overlay" id="callDetailModal">
-  <div class="modal">
+  <div class="modal" style="max-width:780px;">
     <div class="modal-header">
-      <h3 class="modal-title">Детали звонка</h3>
-      <button class="modal-close" onclick="closeModal()"></button>
+      <h3 class="modal-title" id="modalTitle">Детали звонка</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="modal-body" id="modalBody">
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('info', this)">📋 Информация</button>
+      <button class="modal-tab" onclick="switchTab('transcript', this)">🔤 Транскрипция</button>
+      <button class="modal-tab" onclick="switchTab('analysis', this)">🧠 Аналитика</button>
+      <button class="modal-tab" onclick="switchTab('audio', this)">🎵 Аудио</button>
+    </div>
+    <div class="modal-body">
+      <div id="tabInfo" class="modal-tab-panel active"></div>
+      <div id="tabTranscript" class="modal-tab-panel"></div>
+      <div id="tabAnalysis" class="modal-tab-panel"></div>
+      <div id="tabAudio" class="modal-tab-panel"></div>
     </div>
     <div class="modal-footer">
       <button class="modal-footer-btn" onclick="closeModal()">Закрыть</button>
-      <button class="modal-footer-btn primary" onclick="exportCallReport()">Экспорт отчёта</button>
+      <button class="modal-footer-btn primary" id="audioDownloadBtn" style="display:none;">⬇️ Скачать аудио</button>
     </div>
   </div>
 </div>
@@ -1664,84 +1865,137 @@
 
 <script>
 // ========================
-// DATA
+// CONFIG
 // ========================
-const callData = [
-  { id: '234567890', date: '2027-01-15', time: '16:00', status: 'failed', result: 'error', description: 'problem error', size: 2.63, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Иванов А.С.', duration: '0:00', notes: 'Ошибка соединения с сервером' },
-  { id: '234567891', date: '2027-01-15', time: '15:59', status: 'success', result: 'transciation', description: 'transciation is complete', size: 2.53, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Петрова М.В.', duration: '3:42', notes: 'Транзакция успешно завершена' },
-  { id: '234567892', date: '2027-01-15', time: '15:42', status: 'success', result: 'sync', description: 'синхронизация данных', size: 1.87, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Сидоров К.Л.', duration: '1:15', notes: 'Синхронизация прошла успешно' },
-  { id: '234567893', date: '2027-01-15', time: '14:58', status: 'success', result: 'export', description: 'экспорт отчёта', size: 4.21, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Козлова Е.Н.', duration: '2:30', notes: 'Отчёт экспортирован в PDF' },
-  { id: '234567894', date: '2027-01-15', time: '14:30', status: 'processing', result: 'sync', description: 'импорт данных из CRM', size: 3.45, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Иванов А.С.', duration: '0:45', notes: 'Идёт обработка данных' },
-  { id: '234567895', date: '2027-01-15', time: '13:20', status: 'success', result: 'transciation', description: 'оплата подписки', size: 0.98, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Петрова М.В.', duration: '5:12', notes: 'Подписка продлена до 2028' },
-  { id: '234567896', date: '2027-01-15', time: '12:45', status: 'failed', result: 'error', description: 'timeout error connection', size: 5.12, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Сидоров К.Л.', duration: '0:00', notes: 'Превышено время ожидания' },
-  { id: '234567897', date: '2027-01-15', time: '12:10', status: 'success', result: 'import', description: 'импорт контактов', size: 7.89, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Козлова Е.Н.', duration: '4:20', notes: 'Загружено 1500 контактов' },
-  { id: '234567898', date: '2027-01-15', time: '11:30', status: 'pending', result: 'sync', description: 'ожидание синхронизации', size: 1.23, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Иванов А.С.', duration: '0:00', notes: 'В очереди на обработку' },
-  { id: '234567899', date: '2027-01-15', time: '10:55', status: 'success', result: 'export', description: 'выгрузка статистики', size: 3.67, sizeUnit: 'MB', lastReview: '2027-01-15', operator: 'Петрова М.В.', duration: '2:10', notes: 'Статистика за декабрь' },
-  { id: '234567900', date: '2027-01-14', time: '18:30', status: 'failed', result: 'error', description: 'database connection error', size: 0.45, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Сидоров К.Л.', duration: '0:00', notes: 'Нет доступа к базе данных' },
-  { id: '234567901', date: '2027-01-14', time: '17:15', status: 'success', result: 'transciation', description: 'проведение платежа', size: 1.56, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Козлова Е.Н.', duration: '3:05', notes: 'Платёж подтверждён' },
-  { id: '234567902', date: '2027-01-14', time: '16:40', status: 'success', result: 'sync', description: 'обновление справочников', size: 2.34, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Иванов А.С.', duration: '1:50', notes: 'Справочники обновлены' },
-  { id: '234567903', date: '2027-01-14', time: '15:20', status: 'processing', result: 'import', description: 'загрузка архива', size: 12.45, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Петрова М.В.', duration: '6:30', notes: 'Распаковка архива' },
-  { id: '234567904', date: '2027-01-14', time: '14:05', status: 'success', result: 'export', description: 'формирование отчёта', size: 2.89, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Сидоров К.Л.', duration: '2:45', notes: 'Отчёт по продажам' },
-  { id: '234567905', date: '2027-01-14', time: '13:30', status: 'failed', result: 'error', description: 'validation error data', size: 0.78, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Козлова Е.Н.', duration: '0:00', notes: 'Ошибка валидации данных' },
-  { id: '234567906', date: '2027-01-14', time: '12:00', status: 'success', result: 'transciation', description: 'обновление баланса', size: 1.12, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Иванов А.С.', duration: '1:30', notes: 'Баланс успешно обновлён' },
-  { id: '234567907', date: '2027-01-14', time: '11:15', status: 'pending', result: 'sync', description: 'синхронизация с API', size: 0.56, sizeUnit: 'MB', lastReview: '2027-01-09', operator: 'Петрова М.В.', duration: '0:00', notes: 'Ожидание ответа API' },
-  { id: '234567908', date: '2027-01-14', time: '10:30', status: 'success', result: 'import', description: 'загрузка CSV данных', size: 5.67, sizeUnit: 'MB', lastReview: '2027-01-14', operator: 'Сидоров К.Л.', duration: '3:20', notes: 'Загружено 3200 строк' },
-  { id: '234567909', date: '2027-01-13', time: '19:00', status: 'success', result: 'export', description: 'экспорт логов', size: 8.34, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Козлова Е.Н.', duration: '4:10', notes: 'Логи за неделю экспортированы' },
-  { id: '234567910', date: '2027-01-13', time: '18:15', status: 'failed', result: 'error', description: 'network timeout', size: 0.34, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Иванов А.С.', duration: '0:00', notes: 'Таймаут сетевого соединения' },
-  { id: '234567911', date: '2027-01-13', time: '17:30', status: 'success', result: 'transciation', description: 'перевод средств', size: 1.89, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Петрова М.В.', duration: '2:55', notes: 'Перевод выполнен' },
-  { id: '234567912', date: '2027-01-13', time: '16:45', status: 'processing', result: 'sync', description: 'обработка очереди', size: 4.56, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Сидоров К.Л.', duration: '5:00', notes: 'Обработка задач в очереди' },
-  { id: '234567913', date: '2027-01-13', time: '15:20', status: 'success', result: 'import', description: 'импорт из Excel', size: 3.21, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Козлова Е.Н.', duration: '2:15', notes: 'Данные импортированы' },
-  { id: '234567914', date: '2027-01-13', time: '14:00', status: 'success', result: 'export', description: 'создание бэкапа', size: 15.67, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Иванов А.С.', duration: '8:30', notes: 'Резервная копия создана' },
-  { id: '234567915', date: '2027-01-13', time: '13:10', status: 'failed', result: 'error', description: 'permission denied', size: 0.23, sizeUnit: 'MB', lastReview: '2027-01-13', operator: 'Петрова М.В.', duration: '0:00', notes: 'Нет прав доступа' },
-  { id: '234567916', date: '2027-01-13', time: '12:30', status: 'success', result: 'transciation', description: 'закрытие счёта', size: 0.98, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Сидоров К.Л.', duration: '1:45', notes: 'Счёт закрыт успешно' },
-  { id: '234567917', date: '2027-01-13', time: '11:45', status: 'pending', result: 'import', description: 'ожидание импорта', size: 6.78, sizeUnit: 'MB', lastReview: '2027-01-08', operator: 'Козлова Е.Н.', duration: '0:00', notes: 'Файл в очереди' },
-  { id: '234567918', date: '2027-01-12', time: '18:00', status: 'success', result: 'sync', description: 'обновление системы', size: 9.12, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Иванов А.С.', duration: '6:00', notes: 'Система обновлена до v3.2' },
-  { id: '234567919', date: '2027-01-12', time: '17:00', status: 'success', result: 'export', description: 'отправка отчёта', size: 2.45, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Петрова М.В.', duration: '1:50', notes: 'Отчёт отправлен на email' },
-  { id: '234567920', date: '2027-01-12', time: '16:15', status: 'failed', result: 'error', description: 'file not found', size: 0.01, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Сидоров К.Л.', duration: '0:00', notes: 'Файл не найден на сервере' },
-  { id: '234567921', date: '2027-01-12', time: '15:30', status: 'success', result: 'transciation', description: 'автоматическое списание', size: 1.34, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Козлова Е.Н.', duration: '2:20', notes: 'Списание выполнено' },
-  { id: '234567922', date: '2027-01-12', time: '14:20', status: 'success', result: 'import', description: 'импорт из API', size: 4.56, sizeUnit: 'MB', lastReview: '2027-01-09', operator: 'Иванов А.С.', duration: '3:40', notes: 'Данные из внешнего API' },
-  { id: '234567923', date: '2027-01-12', time: '13:00', status: 'processing', result: 'export', description: 'генерация отчёта', size: 3.89, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Петрова М.В.', duration: '4:50', notes: 'Генерация в процессе' },
-  { id: '234567924', date: '2027-01-12', time: '12:15', status: 'success', result: 'sync', description: 'синхронизация пользователей', size: 2.12, sizeUnit: 'MB', lastReview: '2027-01-12', operator: 'Сидоров К.Л.', duration: '1:30', notes: 'Пользователи синхронизированы' },
-  { id: '234567925', date: '2027-01-11', time: '19:30', status: 'failed', result: 'error', description: 'disk space error', size: 0.67, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Козлова Е.Н.', duration: '0:00', notes: 'Недостаточно места на диске' },
-  { id: '234567926', date: '2027-01-11', time: '18:45', status: 'success', result: 'transciation', description: 'возврат средств', size: 1.78, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Иванов А.С.', duration: '3:10', notes: 'Возврат обработан' },
-  { id: '234567927', date: '2027-01-11', time: '17:00', status: 'success', result: 'export', description: 'архивация данных', size: 11.23, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Петрова М.В.', duration: '7:20', notes: 'Данные заархивированы' },
-  { id: '234567928', date: '2027-01-11', time: '16:10', status: 'pending', result: 'import', description: 'подготовка к импорту', size: 0.45, sizeUnit: 'MB', lastReview: '2027-01-07', operator: 'Сидоров К.Л.', duration: '0:00', notes: 'Валидация файла' },
-  { id: '234567929', date: '2027-01-11', time: '15:00', status: 'success', result: 'sync', description: 'обновление индексов', size: 3.45, sizeUnit: 'MB', lastReview: '2027-01-11', operator: 'Козлова Е.Н.', duration: '2:00', notes: 'Индексы обновлены' },
-  { id: '234567930', date: '2027-01-11', time: '14:30', status: 'success', result: 'transciation', description: 'подписка на сервис', size: 0.89, sizeUnit: 'MB', lastReview: '2027-01-08', operator: 'Иванов А.С.', duration: '1:15', notes: 'Подписка активирована' },
-  { id: '234567931', date: '2027-01-10', time: '19:00', status: 'failed', result: 'error', description: 'authentication failed', size: 0.12, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Петрова М.В.', duration: '0:00', notes: 'Ошибка аутентификации' },
-  { id: '234567932', date: '2027-01-10', time: '18:20', status: 'success', result: 'import', description: 'загрузка документов', size: 6.34, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Сидоров К.Л.', duration: '4:00', notes: 'Документы загружены' },
-  { id: '234567933', date: '2027-01-10', time: '17:30', status: 'success', result: 'export', description: 'выгрузка аналитики', size: 5.12, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Козлова Е.Н.', duration: '3:30', notes: 'Аналитика за месяц' },
-  { id: '234567934', date: '2027-01-10', time: '16:00', status: 'processing', result: 'sync', description: 'пересчёт статистики', size: 2.67, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Иванов А.С.', duration: '5:40', notes: 'Пересчёт в процессе' },
-  { id: '234567935', date: '2027-01-10', time: '15:15', status: 'success', result: 'transciation', description: 'конвертация валюты', size: 1.45, sizeUnit: 'MB', lastReview: '2027-01-07', operator: 'Петрова М.В.', duration: '2:10', notes: 'Курс применён' },
-  { id: '234567936', date: '2027-01-10', time: '14:00', status: 'success', result: 'import', description: 'интеграция с CRM', size: 8.90, sizeUnit: 'MB', lastReview: '2027-01-10', operator: 'Сидоров К.Л.', duration: '6:15', notes: 'CRM данные импортированы' },
-  { id: '234567937', date: '2027-01-09', time: '18:30', status: 'success', result: 'export', description: 'отчёт по KPI', size: 3.78, sizeUnit: 'MB', lastReview: '2027-01-09', operator: 'Козлова Е.Н.', duration: '2:50', notes: 'KPI за квартал' },
-  { id: '234567938', date: '2027-01-09', time: '17:45', status: 'failed', result: 'error', description: 'rate limit exceeded', size: 0.05, sizeUnit: 'MB', lastReview: '2027-01-09', operator: 'Иванов А.С.', duration: '0:00', notes: 'Превышен лимит запросов' },
-  { id: '234567939', date: '2027-01-09', time: '16:30', status: 'success', result: 'sync', description: 'синхронизация каталога', size: 4.23, sizeUnit: 'MB', lastReview: '2027-01-09', operator: 'Петрова М.В.', duration: '3:00', notes: 'Каталог обновлён' },
-];
+const API_KEY = 'QtEAKkjfW9UNDDT8o-FWOFYwKriwR0VkF8b_1THFp60';
+const HEADERS = { 'X-API-Key': API_KEY };
 
-// Recent operations data
-const recentOperations = [
-  { time: '16:00', id: '234567890', description: 'problem error', size: '2.63 MB' },
-  { time: '15:59', id: '234567891', description: 'transciation is complete', size: '2.53 MB' },
-  { time: '15:42', id: '234567892', description: 'синхронизация данных', size: '1.87 MB' },
-  { time: '14:58', id: '234567893', description: 'экспорт отчёта', size: '4.21 MB' },
-];
+async function apiFetch(url) {
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
 
-// State
+// ========================
+// STATE
+// ========================
+let callData = [];
 let currentPage = 1;
 const itemsPerPage = 10;
-let filteredData = [...callData];
+let filteredData = [];
 let activeChipFilters = [];
 let currentSortField = 'date';
 let currentSortDir = 'desc';
+let _transcriptSnippets = {};
+let _searchSeq = 0;
+let _suggestTimer = null;
+const _activePollers = {}; // callId → intervalId
+
+// ========================
+// LOAD DATA FROM API
+// ========================
+async function loadData() {
+  try {
+    showToast('Загрузка данных...', 'info');
+    const [callsRes, statsRes] = await Promise.all([
+      apiFetch('/calls?limit=500&offset=0'),
+      apiFetch('/admin/stats'),
+    ]);
+    callData = callsRes.calls.map(mapCall);
+    updateStatsFromApi(statsRes);
+    applyFilters();
+    renderRecentOperations();
+    showToast('Данные загружены', 'success');
+  } catch (e) {
+    showToast('Ошибка загрузки: ' + e.message, 'error');
+  }
+}
+
+function mapCall(c) {
+  const sizeBytes = c.file_size_bytes || 0;
+  const sizeMb = (sizeBytes / 1024 / 1024).toFixed(2);
+  const dt = new Date(c.created_at);
+  return {
+    id: c.call_id,
+    date: dt.toISOString().slice(0, 10),
+    time: dt.toTimeString().slice(0, 5),
+    status: c.status,
+    employee_name: c.employee_name || '—',
+    phone_from: c.phone_from || '—',
+    phone_to: c.phone_to || '—',
+    direction: c.direction || '—',
+    duration: c.duration_seconds ? formatSeconds(c.duration_seconds) : '—',
+    size: parseFloat(sizeMb),
+    sizeUnit: 'МБ',
+    source: c.source,
+    sentiment: c.analysis_sentiment || null,
+    score: c.analysis_score || null,
+    outcome: c.analysis_call_outcome || null,
+    created_at: c.created_at,
+    transcribed_at: c.transcribed_at,
+    analyzed_at: c.analyzed_at,
+    _raw: c,
+  };
+}
+
+function formatSeconds(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function updateStatsFromApi(stats) {
+  const by = stats.calls.by_status || {};
+  const total = stats.calls.total || 0;
+  const analyzed = by.analyzed || 0;
+  const errTotal = (by.failed_download || 0) + (by.failed_transcription || 0) + (by.failed_analysis || 0);
+  const storageMb = stats.storage.total_size_mb || 0;
+  const last24h = stats.calls.last_24h || {};
+  const errors24h = stats.errors.last_24h || 0;
+
+  document.getElementById('statTotalCalls').textContent = total;
+  document.getElementById('statSuccess').textContent = analyzed;
+  document.getElementById('statErrors').textContent = errTotal;
+
+  const callsChangeEl = document.getElementById('statCallsChange');
+  const successChangeEl = document.getElementById('statSuccessChange');
+  const errorsChangeEl = document.getElementById('statErrorsChange');
+  if (callsChangeEl) callsChangeEl.textContent = last24h.downloaded > 0 ? `↑ ${last24h.downloaded} за сегодня` : 'Нет новых сегодня';
+  if (successChangeEl) successChangeEl.textContent = last24h.analyzed > 0 ? `↑ ${last24h.analyzed} проанализировано сегодня` : 'Нет проанализированных сегодня';
+  if (errorsChangeEl) errorsChangeEl.textContent = errors24h > 0 ? `↑ ${errors24h} за последние 24ч` : 'Нет ошибок за 24ч';
+
+  // 4th card — storage
+  const storageMbEl = document.getElementById('statStorageMb');
+  const storageChangeEl = document.getElementById('statStorageChange');
+  if (storageMbEl) storageMbEl.textContent = storageMb >= 1024 ? (storageMb / 1024).toFixed(1) + ' ГБ' : storageMb.toFixed(1) + ' МБ';
+  if (storageChangeEl) storageChangeEl.textContent = total + ' файлов';
+
+  // Storage bar (assume capacity 512 GB for display)
+  const capacityMb = 512 * 1024;
+  const usedPct = Math.min(100, (storageMb / capacityMb * 100)).toFixed(1);
+  const freePct = (100 - usedPct).toFixed(1);
+  const usedGb = (storageMb / 1024).toFixed(1);
+  const freeGb = ((capacityMb - storageMb) / 1024).toFixed(1);
+
+  const storageEl = document.querySelector('.storage-stats');
+  if (storageEl) {
+    storageEl.innerHTML = `
+      <div class="storage-stat-item"><div class="storage-dot used"></div>
+        <span>Использовано: ${usedGb} ГБ (${usedPct}%)</span></div>
+      <div class="storage-stat-item"><div class="storage-dot free"></div>
+        <span>Свободно: ${freeGb} ГБ (${freePct}%)</span></div>`;
+  }
+  const barUsed = document.querySelector('.storage-bar-used');
+  const barFree = document.querySelector('.storage-bar-free');
+  if (barUsed) barUsed.style.width = usedPct + '%';
+  if (barFree) barFree.style.width = freePct + '%';
+}
 
 // ========================
 // INITIALIZATION
 // ========================
 document.addEventListener('DOMContentLoaded', () => {
-  applyFilters();
-  renderRecentOperations();
-  updateStats();
+  loadData();
 
   // Smart search event listeners
   const searchInput = document.getElementById('smartSearchInput');
@@ -1798,51 +2052,53 @@ function handleSearchFocus() {
 }
 
 function showSuggestions(query) {
+  clearTimeout(_suggestTimer);
   const suggestionsEl = document.getElementById('searchSuggestions');
-  const q = query.toLowerCase();
-  const results = callData.filter(item =>
-    item.id.includes(q) ||
-    item.description.toLowerCase().includes(q) ||
-    item.status.toLowerCase().includes(q) ||
-    item.result.toLowerCase().includes(q) ||
-    item.operator.toLowerCase().includes(q)
-  ).slice(0, 8);
-
-  if (results.length === 0) {
-    suggestionsEl.innerHTML = `
-      <div class="suggestion-item" style="color: var(--text-muted); justify-content: center;">
-        Ничего не найдено по запросу "${escapeHtml(query)}"
-      </div>`;
-  } else {
-    suggestionsEl.innerHTML = results.map(item => {
-      const statusLabel = getStatusLabel(item.status);
-      const statusClass = item.status;
-      return `
-        <div class="suggestion-item" onclick="selectSuggestion('${item.id}')">
-          <div class="s-icon" style="background: var(--bg-card);">
-            ${statusClass === 'success' ? '✅' : statusClass === 'failed' ? '❌' : statusClass === 'processing' ? '️' : '⏳'}
-          </div>
-          <div class="s-text">
-            <strong>${highlightMatch(item.description, query)}</strong>
-            <small>${statusLabel} · ${item.operator}</small>
-          </div>
-          <div class="s-id">${item.id}</div>
-        </div>`;
-    }).join('');
-  }
-
+  suggestionsEl.innerHTML = `<div class="suggestion-item" style="color:var(--text-muted);justify-content:center;">Поиск…</div>`;
   suggestionsEl.classList.add('open');
+
+  _suggestTimer = setTimeout(async () => {
+    try {
+      const res = await apiFetch(`/calls?q=${encodeURIComponent(query)}&limit=8`);
+      const results = res.calls;
+      if (results.length === 0) {
+        suggestionsEl.innerHTML = `
+          <div class="suggestion-item" style="color: var(--text-muted); justify-content: center;">
+            Ничего не найдено по запросу "${escapeHtml(query)}"
+          </div>`;
+      } else {
+        suggestionsEl.innerHTML = results.map(c => {
+          const item = mapCall(c);
+          const statusLabel = getStatusLabel(item.status);
+          const icon = item.status === 'analyzed' ? '✅' : item.status.startsWith('failed') ? '❌' : item.status === 'transcribed' ? '🔤' : '⏳';
+          const snippetHtml = c.transcript_snippet
+            ? `<small class="suggestion-snippet">${highlightMatch(c.transcript_snippet, query)}</small>`
+            : '';
+          return `
+            <div class="suggestion-item" onclick="selectSuggestion('${item.id}')">
+              <div class="s-icon" style="background: var(--bg-card);">${icon}</div>
+              <div class="s-text">
+                <strong>${highlightMatch(item.employee_name || item.phone_from, query)}</strong>
+                <small>${statusLabel} · ${item.date} ${item.time}</small>
+                ${snippetHtml}
+              </div>
+              <div class="s-id">${item.id.slice(0,8)}</div>
+            </div>`;
+        }).join('');
+      }
+    } catch (e) {
+      suggestionsEl.innerHTML = `<div class="suggestion-item" style="color:var(--accent-red);justify-content:center;">Ошибка поиска</div>`;
+    }
+    suggestionsEl.classList.add('open');
+  }, 250);
 }
 
 function selectSuggestion(id) {
-  const call = callData.find(c => c.id === id);
-  if (call) {
-    document.getElementById('smartSearchInput').value = id;
-    document.getElementById('searchClearBtn').classList.add('visible');
-    document.getElementById('searchSuggestions').classList.remove('open');
-    applyFilters();
-    showToast(`Найдена запись #${id}`, 'info');
-  }
+  document.getElementById('smartSearchInput').value = id;
+  document.getElementById('searchClearBtn').classList.add('visible');
+  document.getElementById('searchSuggestions').classList.remove('open');
+  applyFilters();
+  showToast(`Найдена запись ${id.slice(0,8)}…`, 'info');
 }
 
 function highlightMatch(text, query) {
@@ -1871,52 +2127,65 @@ function clearSearch() {
 // ========================
 // FILTERING
 // ========================
-function applyFilters() {
-  const searchQuery = document.getElementById('smartSearchInput').value.trim().toLowerCase();
+async function applyFilters() {
+  const seq = ++_searchSeq;
+  const searchQuery = document.getElementById('smartSearchInput').value.trim();
   const statusFilter = document.getElementById('filterStatus').value;
-  const resultFilter = document.getElementById('filterResult').value;
+  const sourceFilter = document.getElementById('filterSource').value;
   const periodFilter = document.getElementById('filterPeriod').value;
 
-  filteredData = callData.filter(item => {
-    // Search query filter
-    if (searchQuery.length >= 2) {
-      const matchSearch =
-        item.id.includes(searchQuery) ||
-        item.description.toLowerCase().includes(searchQuery) ||
-        item.status.toLowerCase().includes(searchQuery) ||
-        item.result.toLowerCase().includes(searchQuery) ||
-        item.operator.toLowerCase().includes(searchQuery);
-      if (!matchSearch) return false;
-    }
-
-    // Status filter
-    if (statusFilter !== 'all' && item.status !== statusFilter) return false;
-
-    // Result filter
-    if (resultFilter !== 'all' && item.result !== resultFilter) return false;
-
-    // Period filter
+  if (searchQuery.length >= 2) {
+    // Server-side full-text search (includes transcript_text)
+    const params = new URLSearchParams({ q: searchQuery, limit: 500, offset: 0 });
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (sourceFilter !== 'all') params.set('source', sourceFilter);
     if (periodFilter !== 'all') {
-      const itemDate = new Date(item.date);
-      const now = new Date('2027-01-15');
-      if (periodFilter === 'today' && item.date !== '2027-01-15') return false;
-      if (periodFilter === 'week') {
-        const weekAgo = new Date(now);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        if (itemDate < weekAgo) return false;
-      }
-      if (periodFilter === 'month') {
-        const monthAgo = new Date(now);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        if (itemDate < monthAgo) return false;
-      }
+      const now = new Date();
+      let date_from;
+      if (periodFilter === 'today') date_from = now.toISOString().slice(0, 10);
+      else if (periodFilter === 'week') { const d = new Date(now); d.setDate(d.getDate() - 7); date_from = d.toISOString().slice(0, 10); }
+      else if (periodFilter === 'month') { const d = new Date(now); d.setMonth(d.getMonth() - 1); date_from = d.toISOString().slice(0, 10); }
+      if (date_from) params.set('date_from', date_from);
     }
+    try {
+      const res = await apiFetch(`/calls?${params}`);
+      if (seq !== _searchSeq) return;
+      _transcriptSnippets = {};
+      res.calls.forEach(c => { if (c.transcript_snippet) _transcriptSnippets[c.call_id] = c.transcript_snippet; });
+      filteredData = res.calls.map(mapCall);
+    } catch (e) {
+      if (seq !== _searchSeq) return;
+      filteredData = [];
+    }
+  } else {
+    _transcriptSnippets = {};
+    filteredData = callData.filter(item => {
+      if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+      if (sourceFilter !== 'all' && item.source !== sourceFilter) return false;
 
-    // Chip filters
-    if (activeChipFilters.includes('large') && item.size <= 3) return false;
+      if (periodFilter !== 'all') {
+        const itemDate = new Date(item.date);
+        const now = new Date();
+        const today = now.toISOString().slice(0, 10);
+        if (periodFilter === 'today' && item.date !== today) return false;
+        if (periodFilter === 'week') {
+          const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+          if (itemDate < weekAgo) return false;
+        }
+        if (periodFilter === 'month') {
+          const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
+          if (itemDate < monthAgo) return false;
+        }
+      }
 
-    return true;
-  });
+      if (activeChipFilters.includes('large') && item.size <= 3) return false;
+
+      const statusChips = activeChipFilters.filter(f => ['analyzed','transcribed','stored','pending','failed_analysis','failed_transcription','failed_download'].includes(f));
+      if (statusChips.length > 0 && !statusChips.includes(item.status)) return false;
+
+      return true;
+    });
+  }
 
   // Apply sorting
   sortData();
@@ -1935,12 +2204,11 @@ function sortData() {
   const sortDir = document.getElementById('filterSort').value.split('-')[1];
 
   const sortMap = {
-    date: (a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time),
+    date: (a, b) => new Date(a.created_at) - new Date(b.created_at),
     size: (a, b) => a.size - b.size,
-    id: (a, b) => parseInt(a.id) - parseInt(b.id),
+    id: (a, b) => a.id.localeCompare(b.id),
     status: (a, b) => a.status.localeCompare(b.status),
-    result: (a, b) => a.result.localeCompare(b.result),
-    lastReview: (a, b) => new Date(a.lastReview) - new Date(b.lastReview),
+    duration: (a, b) => a.duration.localeCompare(b.duration),
   };
 
   const comparator = sortMap[sortField] || sortMap.date;
@@ -1972,14 +2240,10 @@ function toggleChipFilter(chip, filter) {
     activeChipFilters.push(filter);
   }
 
-  // Update dropdown if status chip
-  if (['success', 'failed', 'processing', 'pending'].includes(filter)) {
-    if (activeChipFilters.some(f => ['success', 'failed', 'processing', 'pending'].includes(f))) {
-      const statusChips = activeChipFilters.filter(f => ['success', 'failed', 'processing', 'pending'].includes(f));
-      document.getElementById('filterStatus').value = statusChips[0];
-    } else {
-      document.getElementById('filterStatus').value = 'all';
-    }
+  const statusValues = ['analyzed','transcribed','stored','pending','failed_analysis','failed_transcription','failed_download'];
+  if (statusValues.includes(filter)) {
+    const statusChips = activeChipFilters.filter(f => statusValues.includes(f));
+    document.getElementById('filterStatus').value = statusChips.length ? statusChips[0] : 'all';
   }
 
   applyFilters();
@@ -1990,13 +2254,13 @@ function filterByStatus(status) {
   document.getElementById('smartSearchInput').value = '';
   document.getElementById('searchClearBtn').classList.remove('visible');
 
-  // Update chips
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.classList.remove('active');
-    const chipFilter = chip.onclick.toString().match(/'([^']+)'/)?.[1];
+    const chipFilter = chip.onclick?.toString().match(/'([^']+)'/)?.[1];
     if (chipFilter === status) chip.classList.add('active');
   });
-  activeChipFilters = activeChipFilters.filter(f => !['success', 'failed', 'processing', 'pending'].includes(f));
+  const statusValues = ['analyzed','transcribed','stored','pending','failed_analysis','failed_transcription','failed_download'];
+  activeChipFilters = activeChipFilters.filter(f => !statusValues.includes(f));
   if (status !== 'all') activeChipFilters.push(status);
 
   applyFilters();
@@ -2013,8 +2277,8 @@ function renderActiveFilters() {
   const statusVal = document.getElementById('filterStatus').value;
   if (statusVal !== 'all') tags.push(`<span class="active-filter-tag">Статус: ${getStatusLabel(statusVal)} <button onclick="resetFilter('filterStatus','all')">✕</button></span>`);
 
-  const resultVal = document.getElementById('filterResult').value;
-  if (resultVal !== 'all') tags.push(`<span class="active-filter-tag">Результат: ${getResultLabel(resultVal)} <button onclick="resetFilter('filterResult','all')">✕</button></span>`);
+  const sourceVal = document.getElementById('filterSource').value;
+  if (sourceVal !== 'all') tags.push(`<span class="active-filter-tag">Источник: ${sourceVal === 'mango' ? 'Mango Office' : 'Ручная загрузка'} <button onclick="resetFilter('filterSource','all')">✕</button></span>`);
 
   const periodVal = document.getElementById('filterPeriod').value;
   if (periodVal !== 'all') tags.push(`<span class="active-filter-tag">Период: ${getPeriodLabel(periodVal)} <button onclick="resetFilter('filterPeriod','all')">✕</button></span>`);
@@ -2044,7 +2308,7 @@ function removeChipFilter(filter) {
 
 function clearAllFilters() {
   document.getElementById('filterStatus').value = 'all';
-  document.getElementById('filterResult').value = 'all';
+  document.getElementById('filterSource').value = 'all';
   document.getElementById('filterPeriod').value = 'all';
   document.getElementById('filterSort').value = 'date-desc';
   clearSearch();
@@ -2074,11 +2338,13 @@ function renderTable() {
   const emptyState = document.getElementById('emptyState');
   const table = document.querySelector('.data-table');
 
+  document.getElementById('tableBadge').textContent = filteredData.length;
+
   if (filteredData.length === 0) {
     table.style.display = 'none';
     emptyState.style.display = 'block';
     document.getElementById('pagination').innerHTML = '';
-    document.getElementById('tableFooterInfo').textContent = 'Нет записей';
+    document.getElementById('tableFooterInfo').textContent = callData.length === 0 ? 'Нет звонков в базе данных' : 'Ничего не найдено по фильтрам';
     return;
   }
 
@@ -2091,12 +2357,13 @@ function renderTable() {
 
   tbody.innerHTML = pageData.map(item => `
     <tr>
-      <td class="cell-id">#${item.id}</td>
+      <td class="cell-id" title="${item.id}">${item.id.slice(0, 8)}…</td>
       <td>${formatDate(item.date)} <span style="color:var(--text-muted);font-size:12px;">${item.time}</span></td>
       <td><span class="status-badge ${item.status}"><span class="status-dot"></span>${getStatusLabel(item.status)}</span></td>
-      <td><span class="result-tag ${item.result === 'error' ? 'error' : item.result === 'transciation' ? '' : 'info'}">${getResultLabel(item.result)}</span></td>
+      <td style="color:var(--text-primary);">${escapeHtml(item.employee_name)}</td>
+      <td style="font-family:monospace;font-size:12px;">${escapeHtml(item.phone_from)}</td>
       <td>${item.size} ${item.sizeUnit}</td>
-      <td>${formatDate(item.lastReview)}</td>
+      <td>${item.duration}</td>
       <td><button class="detail-btn" onclick="showCallDetail('${item.id}')">Подробнее</button></td>
     </tr>
   `).join('');
@@ -2151,76 +2418,195 @@ function goToPage(page) {
 // ========================
 function renderRecentOperations() {
   const tbody = document.getElementById('recentOpsBody');
-  tbody.innerHTML = recentOperations.map(op => {
-    const call = callData.find(c => c.id === op.id);
-    const status = call ? call.status : 'processing';
-    return `
-      <tr>
-        <td>${op.time}</td>
-        <td>
-          <span style="font-family:monospace;font-size:12px;color:var(--text-primary);font-weight:600;">id ${op.id}</span>
-          <span style="margin-left:8px;color:var(--text-secondary);">${op.description}</span>
-        </td>
-        <td>${op.size}</td>
-        <td><button class="detail-btn" onclick="showCallDetail('${op.id}')">Подробнее</button></td>
-      </tr>`;
-  }).join('');
+  const recent = [...callData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 4);
+  const badge = document.getElementById('recentBadge');
+  if (badge) badge.textContent = recent.length;
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Нет данных</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(c => `
+    <tr>
+      <td>${c.time}</td>
+      <td>
+        <span style="font-family:monospace;font-size:12px;color:var(--text-primary);font-weight:600;">${c.id.slice(0,8)}…</span>
+        <span style="margin-left:8px;color:var(--text-secondary);">${escapeHtml(c.employee_name)} · ${escapeHtml(c.phone_from)}</span>
+      </td>
+      <td>${c.size} ${c.sizeUnit}</td>
+      <td><button class="detail-btn" onclick="showCallDetail('${c.id}')">Подробнее</button></td>
+    </tr>`).join('');
+  document.querySelector('#callsTableContainer .table-header .badge + *')?.parentElement
+    ?.querySelector('.badge')?.setAttribute('data-badge', recent.length);
 }
 
 // ========================
 // MODAL
 // ========================
-function showCallDetail(id) {
+let _currentCallId = null;
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+}
+
+async function showCallDetail(id) {
+  _currentCallId = id;
   const call = callData.find(c => c.id === id);
   if (!call) return;
 
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-detail-grid">
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">ID звонка</span>
-        <span class="modal-detail-value" style="font-family:monospace;">#${call.id}</span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Дата / Время</span>
-        <span class="modal-detail-value">${formatDate(call.date)} ${call.time}</span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Статус</span>
-        <span class="modal-detail-value"><span class="status-badge ${call.status}"><span class="status-dot"></span>${getStatusLabel(call.status)}</span></span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Результат</span>
-        <span class="modal-detail-value"><span class="result-tag ${call.result === 'error' ? 'error' : 'info'}">${getResultLabel(call.result)}</span></span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Оператор</span>
-        <span class="modal-detail-value">${call.operator}</span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Длительность</span>
-        <span class="modal-detail-value">${call.duration}</span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Размер файла</span>
-        <span class="modal-detail-value">${call.size} ${call.sizeUnit}</span>
-      </div>
-      <div class="modal-detail-item">
-        <span class="modal-detail-label">Последний обзор</span>
-        <span class="modal-detail-value">${formatDate(call.lastReview)}</span>
-      </div>
-      <div class="modal-detail-item full-width">
-        <span class="modal-detail-label">Описание</span>
-        <span class="modal-detail-value">${call.description}</span>
-      </div>
-      <div class="modal-detail-item full-width">
-        <span class="modal-detail-label">Примечание</span>
-        <span class="modal-detail-value" style="color:var(--text-secondary);">${call.notes}</span>
-      </div>
-    </div>
-  `;
-
+  document.getElementById('modalTitle').textContent = 'Звонок · ' + id.slice(0, 8) + '…';
   document.getElementById('callDetailModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Reset tabs
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-panel').forEach(p => { p.classList.remove('active'); p.innerHTML = ''; });
+  document.querySelectorAll('.modal-tab')[0].classList.add('active');
+  document.getElementById('tabInfo').classList.add('active');
+
+  // Info tab
+  document.getElementById('tabInfo').innerHTML = `
+    <div class="modal-detail-grid">
+      <div class="modal-detail-item"><span class="modal-detail-label">ID звонка</span>
+        <span class="modal-detail-value" style="font-family:monospace;font-size:12px;">${escapeHtml(call.id)}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Статус</span>
+        <span class="modal-detail-value"><span class="status-badge ${call.status}"><span class="status-dot"></span>${getStatusLabel(call.status)}</span></span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Дата создания</span>
+        <span class="modal-detail-value">${formatDate(call.date)} ${call.time}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Источник</span>
+        <span class="modal-detail-value">${call.source === 'mango' ? '📞 Mango Office' : '📤 Ручная загрузка'}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Сотрудник</span>
+        <span class="modal-detail-value">${escapeHtml(call.employee_name)}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Направление</span>
+        <span class="modal-detail-value">${call.direction === 'inbound' ? '📥 Входящий' : call.direction === 'outbound' ? '📤 Исходящий' : '—'}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Звонящий</span>
+        <span class="modal-detail-value" style="font-family:monospace;">${escapeHtml(call.phone_from)}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Принимающий</span>
+        <span class="modal-detail-value" style="font-family:monospace;">${escapeHtml(call.phone_to)}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Длительность</span>
+        <span class="modal-detail-value">${call.duration}</span></div>
+      <div class="modal-detail-item"><span class="modal-detail-label">Размер файла</span>
+        <span class="modal-detail-value">${call.size} ${call.sizeUnit}</span></div>
+      ${call.transcribed_at ? `<div class="modal-detail-item"><span class="modal-detail-label">Транскрибирован</span>
+        <span class="modal-detail-value">${new Date(call.transcribed_at).toLocaleString('ru')}</span></div>` : ''}
+      ${call.analyzed_at ? `<div class="modal-detail-item"><span class="modal-detail-label">Проанализирован</span>
+        <span class="modal-detail-value">${new Date(call.analyzed_at).toLocaleString('ru')}</span></div>` : ''}
+    </div>`;
+
+  // Transcript tab — lazy load
+  document.getElementById('tabTranscript').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">⏳ Загрузка транскрипции…</div>';
+
+  // Analysis tab — lazy load
+  document.getElementById('tabAnalysis').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">⏳ Загрузка аналитики…</div>';
+
+  // Audio tab
+  document.getElementById('tabAudio').innerHTML = `
+    <div class="audio-player-wrap">
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Аудиозапись звонка</p>
+      <audio controls preload="metadata" src="/calls/${encodeURIComponent(id)}/audio"
+        style="width:100%;border-radius:8px;" onerror="this.parentElement.innerHTML='<p style=color:var(--accent-red)>Аудиофайл недоступен</p>'">
+      </audio>
+    </div>`;
+
+  const dlBtn = document.getElementById('audioDownloadBtn');
+  dlBtn.style.display = 'inline-flex';
+  dlBtn.onclick = () => { window.location.href = `/calls/${encodeURIComponent(id)}/audio`; };
+
+  // Fetch transcript + analysis in background
+  Promise.all([
+    apiFetch(`/calls/${encodeURIComponent(id)}/transcript`).catch(e => ({ _error: e.message })),
+    apiFetch(`/calls/${encodeURIComponent(id)}/analysis`).catch(e => ({ _error: e.message })),
+  ]).then(([transcript, analysis]) => {
+    renderTranscriptTab(transcript);
+    renderAnalysisTab(analysis);
+  });
+}
+
+function renderTranscriptTab(data) {
+  const el = document.getElementById('tabTranscript');
+  if (!el) return;
+  if (data._error) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);">Транскрипция ещё недоступна.<br><small>${escapeHtml(data._error)}</small></div>`;
+    return;
+  }
+  const segs = data.segments || [];
+  el.innerHTML = `
+    <div style="padding:4px 0 12px;">
+      <span style="font-size:12px;color:var(--text-muted);">Язык: <strong>${data.language || '—'}</strong>
+      ${data.language_probability ? '· точность ' + Math.round(data.language_probability * 100) + '%' : ''}</span>
+    </div>
+    <div class="transcript-block">${escapeHtml(data.full_text || '')}</div>
+    ${segs.length ? `
+    <div style="margin-top:16px;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Сегменты</div>
+      ${segs.map(s => `<div class="segment-item">
+        <span class="segment-time">${fmtTime(s.start)} → ${fmtTime(s.end)}</span>
+        <span class="segment-text">${escapeHtml(s.text || '')}</span>
+      </div>`).join('')}
+    </div>` : ''}`;
+}
+
+function fmtTime(sec) {
+  if (sec == null) return '—';
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function renderAnalysisTab(data) {
+  const el = document.getElementById('tabAnalysis');
+  if (!el) return;
+  if (data._error) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);">Анализ ещё недоступен.<br><small>${escapeHtml(data._error)}</small></div>`;
+    return;
+  }
+  const sentimentColor = data.sentiment === 'positive' ? 'var(--accent-green)' : data.sentiment === 'negative' ? 'var(--accent-red)' : 'var(--accent-orange)';
+  const sentimentLabel = { positive: '😊 Позитивный', neutral: '😐 Нейтральный', negative: '😞 Негативный' }[data.sentiment] || data.sentiment || '—';
+  const outcomeLabel = { sold: '✅ Продажа', callback: '📞 Перезвон', rejected: '❌ Отказ', escalated: '⚡ Эскалация', consultation: '💬 Консультация', other: '📋 Другое' }[data.call_outcome] || data.call_outcome || '—';
+  const score = data.score;
+
+  el.innerHTML = `
+    <div class="analysis-grid">
+      <div class="analysis-item">
+        <div class="analysis-label">Тональность</div>
+        <div class="analysis-value" style="color:${sentimentColor};">${sentimentLabel}</div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-label">Итог звонка</div>
+        <div class="analysis-value">${outcomeLabel}</div>
+      </div>
+      ${score != null ? `
+      <div class="analysis-item">
+        <div class="analysis-label">Оценка</div>
+        <div class="score-number">${score}<span style="font-size:14px;color:var(--text-muted);">/10</span></div>
+        <div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${score * 10}%;"></div></div></div>
+      </div>` : ''}
+      <div class="analysis-item">
+        <div class="analysis-label">Соответствие скрипту</div>
+        <div class="analysis-value">${data.script_compliance === true ? '✅ Да' : data.script_compliance === false ? '❌ Нет' : '—'}</div>
+      </div>
+      ${data.summary ? `
+      <div class="analysis-item full">
+        <div class="analysis-label">Резюме</div>
+        <div class="analysis-summary">${escapeHtml(data.summary)}</div>
+      </div>` : ''}
+      ${(data.topics || []).length ? `
+      <div class="analysis-item full">
+        <div class="analysis-label">Темы</div>
+        <div class="tag-list">${(data.topics).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>` : ''}
+      ${(data.action_items || []).length ? `
+      <div class="analysis-item full">
+        <div class="analysis-label">Действия</div>
+        <div class="tag-list">${(data.action_items).map(t => `<span class="tag action-tag">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>` : ''}
+      ${(data.script_violations || []).length ? `
+      <div class="analysis-item full">
+        <div class="analysis-label">Нарушения скрипта</div>
+        <div class="tag-list">${(data.script_violations).map(t => `<span class="tag violation-tag">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>` : ''}
+    </div>`;
 }
 
 function closeModal() {
@@ -2243,23 +2629,15 @@ document.addEventListener('keydown', (e) => {
 // ========================
 function getStatusLabel(status) {
   const labels = {
-    success: 'Успешный',
-    failed: 'Провальный',
-    processing: 'Обработка',
-    pending: 'Ожидание'
+    pending: 'Ожидание',
+    stored: 'Сохранён',
+    transcribed: 'Транскрибирован',
+    analyzed: 'Проанализирован',
+    failed_download: 'Ошибка загрузки',
+    failed_transcription: 'Ошибка транскрипции',
+    failed_analysis: 'Ошибка анализа',
   };
   return labels[status] || status;
-}
-
-function getResultLabel(result) {
-  const labels = {
-    transciation: 'Транзакция',
-    error: 'Ошибка',
-    sync: 'Синхронизация',
-    export: 'Экспорт',
-    import: 'Импорт'
-  };
-  return labels[result] || result;
 }
 
 function getPeriodLabel(period) {
@@ -2279,12 +2657,119 @@ function formatDate(dateStr) {
 
 function updateStats() {
   const total = callData.length;
-  const success = callData.filter(c => c.status === 'success').length;
-  const errors = callData.filter(c => c.status === 'failed').length;
-
+  const analyzed = callData.filter(c => c.status === 'analyzed').length;
+  const errors = callData.filter(c => c.status.startsWith('failed')).length;
   document.getElementById('statTotalCalls').textContent = total;
-  document.getElementById('statSuccess').textContent = success;
+  document.getElementById('statSuccess').textContent = analyzed;
   document.getElementById('statErrors').textContent = errors;
+}
+
+// ========================
+// IMPORT
+// ========================
+let _importFile = null;
+
+function openImportModal() {
+  _importFile = null;
+  document.getElementById('importFileInput').value = '';
+  document.getElementById('importFileName').textContent = 'Поддерживается формат MP3, до 200 МБ';
+  document.getElementById('importDropzone').className = 'import-dropzone';
+  document.getElementById('importEmployeeName').value = '';
+  document.getElementById('importPhoneFrom').value = '';
+  document.getElementById('importPhoneTo').value = '';
+  document.getElementById('importDirection').value = '';
+  document.getElementById('importProgress').style.display = 'none';
+  document.getElementById('importProgressFill').style.width = '0%';
+  document.getElementById('importSubmitBtn').disabled = true;
+  document.getElementById('importModal').classList.add('open');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('open');
+}
+
+function importDragOver(e) {
+  e.preventDefault();
+  document.getElementById('importDropzone').classList.add('drag-over');
+}
+
+function importDragLeave(e) {
+  document.getElementById('importDropzone').classList.remove('drag-over');
+}
+
+function importDrop(e) {
+  e.preventDefault();
+  document.getElementById('importDropzone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) setImportFile(file);
+}
+
+function importFileSelected(e) {
+  const file = e.target.files[0];
+  if (file) setImportFile(file);
+}
+
+function setImportFile(file) {
+  _importFile = file;
+  const dropzone = document.getElementById('importDropzone');
+  dropzone.className = 'import-dropzone has-file';
+  document.getElementById('importDropzone').querySelector('.import-dropzone-icon').textContent = '🎵';
+  document.getElementById('importFileName').textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`;
+  document.getElementById('importSubmitBtn').disabled = false;
+}
+
+async function submitImport() {
+  if (!_importFile) return;
+  const btn = document.getElementById('importSubmitBtn');
+  btn.disabled = true;
+  const progressWrap = document.getElementById('importProgress');
+  const fill = document.getElementById('importProgressFill');
+  const label = document.getElementById('importProgressText');
+  progressWrap.style.display = 'block';
+
+  const fd = new FormData();
+  fd.append('file', _importFile);
+  fd.append('employee_name', document.getElementById('importEmployeeName').value.trim());
+  fd.append('phone_from', document.getElementById('importPhoneFrom').value.trim());
+  fd.append('phone_to', document.getElementById('importPhoneTo').value.trim());
+  fd.append('direction', document.getElementById('importDirection').value);
+
+  try {
+    // Animate progress bar (XHR for real progress)
+    const uploadResp = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/calls/upload');
+      xhr.setRequestHeader('X-API-Key', API_KEY);
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const pct = Math.round(e.loaded / e.total * 100);
+          fill.style.width = pct + '%';
+          label.textContent = `Загрузка… ${pct}%`;
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
+        else reject(new Error(`${xhr.status}: ${xhr.responseText}`));
+      };
+      xhr.onerror = () => reject(new Error('Сетевая ошибка'));
+      xhr.send(fd);
+    });
+
+    const newCallId = uploadResp.call_id;
+    fill.style.width = '100%';
+    label.textContent = 'Готово!';
+    showToast(`Файл «${_importFile.name}» загружен — обработка запущена`, 'success');
+    setTimeout(async () => {
+      closeImportModal();
+      await loadData();
+      if (newCallId) startPollCallStatus(newCallId);
+    }, 800);
+  } catch (e) {
+    label.textContent = 'Ошибка: ' + e.message;
+    label.style.color = 'var(--accent-red)';
+    btn.disabled = false;
+    showToast('Ошибка импорта: ' + e.message, 'error');
+  }
 }
 
 // ========================
@@ -2300,6 +2785,54 @@ function toggleSubmenu(el) {
   if (submenu) {
     submenu.classList.toggle('open');
   }
+}
+
+// ========================
+// PIPELINE POLLING
+// ========================
+const TERMINAL_STATUSES = new Set(['analyzed', 'failed_download', 'failed_transcription', 'failed_analysis']);
+
+function startPollCallStatus(callId) {
+  if (_activePollers[callId]) return;
+  let prevStatus = 'stored';
+
+  const STATUS_TOASTS = {
+    transcribed: { msg: `Транскрипция готова (${callId.slice(0,8)}…)`, type: 'success' },
+    analyzed:    { msg: `Анализ завершён (${callId.slice(0,8)}…)`, type: 'success' },
+    failed_download:     { msg: `Ошибка загрузки файла (${callId.slice(0,8)}…)`, type: 'error' },
+    failed_transcription:{ msg: `Ошибка транскрипции (${callId.slice(0,8)}…)`, type: 'error' },
+    failed_analysis:     { msg: `Ошибка анализа (${callId.slice(0,8)}…)`, type: 'error' },
+  };
+
+  _activePollers[callId] = setInterval(async () => {
+    try {
+      const data = await apiFetch(`/calls/${encodeURIComponent(callId)}`);
+      const newStatus = data.status;
+
+      if (newStatus !== prevStatus) {
+        prevStatus = newStatus;
+
+        // Update row in callData in-place
+        const idx = callData.findIndex(c => c.id === callId);
+        if (idx !== -1) {
+          callData[idx] = mapCall(data);
+          applyFilters();
+        }
+
+        if (STATUS_TOASTS[newStatus]) {
+          showToast(STATUS_TOASTS[newStatus].msg, STATUS_TOASTS[newStatus].type);
+        }
+      }
+
+      if (TERMINAL_STATUSES.has(newStatus)) {
+        clearInterval(_activePollers[callId]);
+        delete _activePollers[callId];
+        updateStatsFromApi();
+      }
+    } catch (_) {
+      // Silently ignore transient network errors
+    }
+  }, 4000);
 }
 
 // ========================
@@ -2325,9 +2858,9 @@ function showToast(message, type = 'info') {
 // ========================
 function exportTable() {
   const csvContent = [
-    ['ID', 'Дата', 'Время', 'Статус', 'Результат', 'Размер', 'Оператор', 'Длительность', 'Описание'].join(','),
+    ['ID', 'Дата', 'Время', 'Статус', 'Источник', 'Сотрудник', 'Телефон (от)', 'Телефон (до)', 'Направление', 'Длительность', 'Размер (МБ)'].join(','),
     ...filteredData.map(item =>
-      [item.id, item.date, item.time, item.status, item.result, `${item.size}MB`, item.operator, item.duration, `"${item.description}"`].join(',')
+      [item.id, item.date, item.time, item.status, item.source, `"${item.employee_name}"`, item.phone_from, item.phone_to, item.direction, item.duration, item.size].join(',')
     )
   ].join('\n');
 
@@ -2345,9 +2878,7 @@ function exportCallReport() {
 }
 
 function refreshData() {
-  showToast('Данные обновлены', 'success');
-  applyFilters();
-  renderRecentOperations();
+  loadData();
 }
 
 function refreshTable() {

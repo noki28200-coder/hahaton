@@ -512,24 +512,24 @@
             <span class="analytics-card-title">Всего звонков</span>
             <div class="analytics-card-icon" style="background:rgba(59,130,246,0.15);">📞</div>
           </div>
-          <div class="analytics-card-value" id="analyticsTotal">50</div>
-          <span class="analytics-card-change up">↑ 12% к прошлой неделе</span>
+          <div class="analytics-card-value" id="analyticsTotal">—</div>
+          <span class="analytics-card-change up" id="analyticsTotalChange">Загрузка…</span>
         </div>
         <div class="analytics-card">
           <div class="analytics-card-header">
             <span class="analytics-card-title">Успешность</span>
             <div class="analytics-card-icon" style="background:rgba(16,185,129,0.15);">✅</div>
           </div>
-          <div class="analytics-card-value" id="analyticsSuccessRate">64%</div>
-          <span class="analytics-card-change up">↑ 5% к прошлой неделе</span>
+          <div class="analytics-card-value" id="analyticsSuccessRate">—</div>
+          <span class="analytics-card-change up" id="analyticsRateChange">Загрузка…</span>
         </div>
         <div class="analytics-card">
           <div class="analytics-card-header">
             <span class="analytics-card-title">Средняя длительность</span>
             <div class="analytics-card-icon" style="background:rgba(245,158,11,0.15);">⏱️</div>
           </div>
-          <div class="analytics-card-value" id="analyticsAvgDuration">2:48</div>
-          <span class="analytics-card-change down">↓ 3% к прошлой неделе</span>
+          <div class="analytics-card-value" id="analyticsAvgDuration">—</div>
+          <span class="analytics-card-change" id="analyticsDurChange">Загрузка…</span>
         </div>
       </div>
 
@@ -604,53 +604,12 @@
         </div>
       </div>
 
-      <!-- Heatmap + Bottom Stats -->
-      <div class="two-col">
-        <div class="chart-container">
-          <div class="chart-header">
-            <div class="chart-title">Активность по дням недели</div>
-          </div>
-          <div class="heatmap-labels">
-            <div class="heatmap-label">Пн</div>
-            <div class="heatmap-label">Вт</div>
-            <div class="heatmap-label">Ср</div>
-            <div class="heatmap-label">Чт</div>
-            <div class="heatmap-label">Пт</div>
-            <div class="heatmap-label">Сб</div>
-            <div class="heatmap-label">Вс</div>
-          </div>
-          <div class="heatmap-grid" id="heatmap"></div>
+      <!-- Volume Chart -->
+      <div class="chart-container" style="margin-bottom:28px;">
+        <div class="chart-header">
+          <div class="chart-title">Объём данных (МБ)</div>
         </div>
-
-        <div class="chart-container">
-          <div class="chart-header">
-            <div class="chart-title">Объём данных (МБ)</div>
-          </div>
-          <div id="volumeChart" style="height:280px;"></div>
-        </div>
-      </div>
-
-      <!-- Top Performers -->
-      <div class="top-performers">
-        <div class="chart-container">
-          <div class="chart-header">
-            <div class="chart-title">Рейтинг специалистов</div>
-            <div style="font-size:13px;color:var(--text-muted);">По количеству успешных операций</div>
-          </div>
-          <table class="top-performers-table">
-            <thead>
-              <tr>
-                <th>Место</th>
-                <th>Специалист</th>
-                <th>Всего</th>
-                <th>Успешные</th>
-                <th>Успешность</th>
-                <th>Прогресс</th>
-              </tr>
-            </thead>
-            <tbody id="topPerformersBody"></tbody>
-          </table>
-        </div>
+        <div id="volumeChart" style="height:280px;"></div>
       </div>
     </div>
 
@@ -666,99 +625,95 @@
 </div>
 
 <script>
-// Data
-const callData = [
-  { id: '234567890', date: '2027-01-15', time: '16:00', status: 'failed', result: 'error', description: 'problem error', size: 2.63, operator: 'Иванов А.С.', duration: '0:00' },
-  { id: '234567891', date: '2027-01-15', time: '15:59', status: 'success', result: 'transciation', description: 'transciation is complete', size: 2.53, operator: 'Петрова М.В.', duration: '3:42' },
-  { id: '234567892', date: '2027-01-15', time: '15:42', status: 'success', result: 'sync', description: 'синхронизация данных', size: 1.87, operator: 'Сидоров К.Л.', duration: '1:15' },
-  { id: '234567893', date: '2027-01-15', time: '14:58', status: 'success', result: 'export', description: 'экспорт отчёта', size: 4.21, operator: 'Козлова Е.Н.', duration: '2:30' },
-  { id: '234567894', date: '2027-01-15', time: '14:30', status: 'processing', result: 'sync', description: 'импорт данных из CRM', size: 3.45, operator: 'Иванов А.С.', duration: '0:45' },
-  { id: '234567895', date: '2027-01-15', time: '13:20', status: 'success', result: 'transciation', description: 'оплата подписки', size: 0.98, operator: 'Петрова М.В.', duration: '5:12' },
-  { id: '234567896', date: '2027-01-15', time: '12:45', status: 'failed', result: 'error', description: 'timeout error', size: 5.12, operator: 'Сидоров К.Л.', duration: '0:00' },
-  { id: '234567897', date: '2027-01-15', time: '12:10', status: 'success', result: 'import', description: 'импорт контактов', size: 7.89, operator: 'Козлова Е.Н.', duration: '4:20' },
-  { id: '234567898', date: '2027-01-15', time: '11:30', status: 'pending', result: 'sync', description: 'ожидание синхронизации', size: 1.23, operator: 'Иванов А.С.', duration: '0:00' },
-  { id: '234567899', date: '2027-01-15', time: '10:55', status: 'success', result: 'export', description: 'выгрузка статистики', size: 3.67, operator: 'Петрова М.В.', duration: '2:10' },
-  { id: '234567900', date: '2027-01-14', time: '18:30', status: 'failed', result: 'error', description: 'database connection error', size: 0.45, operator: 'Сидоров К.Л.', duration: '0:00' },
-  { id: '234567901', date: '2027-01-14', time: '17:15', status: 'success', result: 'transciation', description: 'проведение платежа', size: 1.56, operator: 'Козлова Е.Н.', duration: '3:05' },
-  { id: '234567902', date: '2027-01-14', time: '16:40', status: 'success', result: 'sync', description: 'обновление справочников', size: 2.34, operator: 'Иванов А.С.', duration: '1:50' },
-  { id: '234567903', date: '2027-01-14', time: '15:20', status: 'processing', result: 'import', description: 'загрузка архива', size: 12.45, operator: 'Петрова М.В.', duration: '6:30' },
-  { id: '234567904', date: '2027-01-14', time: '14:05', status: 'success', result: 'export', description: 'формирование отчёта', size: 2.89, operator: 'Сидоров К.Л.', duration: '2:45' },
-  { id: '234567905', date: '2027-01-14', time: '13:30', status: 'failed', result: 'error', description: 'validation error', size: 0.78, operator: 'Козлова Е.Н.', duration: '0:00' },
-  { id: '234567906', date: '2027-01-14', time: '12:00', status: 'success', result: 'transciation', description: 'обновление баланса', size: 1.12, operator: 'Иванов А.С.', duration: '1:30' },
-  { id: '234567907', date: '2027-01-14', time: '11:15', status: 'pending', result: 'sync', description: 'синхронизация с API', size: 0.56, operator: 'Петрова М.В.', duration: '0:00' },
-  { id: '234567908', date: '2027-01-14', time: '10:30', status: 'success', result: 'import', description: 'загрузка CSV', size: 5.67, operator: 'Сидоров К.Л.', duration: '3:20' },
-  { id: '234567909', date: '2027-01-13', time: '19:00', status: 'success', result: 'export', description: 'экспорт логов', size: 8.34, operator: 'Козлова Е.Н.', duration: '4:10' },
-  { id: '234567910', date: '2027-01-13', time: '18:15', status: 'failed', result: 'error', description: 'network timeout', size: 0.34, operator: 'Иванов А.С.', duration: '0:00' },
-  { id: '234567911', date: '2027-01-13', time: '17:30', status: 'success', result: 'transciation', description: 'перевод средств', size: 1.89, operator: 'Петрова М.В.', duration: '2:55' },
-  { id: '234567912', date: '2027-01-13', time: '16:45', status: 'processing', result: 'sync', description: 'обработка очереди', size: 4.56, operator: 'Сидоров К.Л.', duration: '5:00' },
-  { id: '234567913', date: '2027-01-13', time: '15:20', status: 'success', result: 'import', description: 'импорт из Excel', size: 3.21, operator: 'Козлова Е.Н.', duration: '2:15' },
-  { id: '234567914', date: '2027-01-13', time: '14:00', status: 'success', result: 'export', description: 'создание бэкапа', size: 15.67, operator: 'Иванов А.С.', duration: '8:30' },
-  { id: '234567915', date: '2027-01-13', time: '13:10', status: 'failed', result: 'error', description: 'permission denied', size: 0.23, operator: 'Петрова М.В.', duration: '0:00' },
-  { id: '234567916', date: '2027-01-13', time: '12:30', status: 'success', result: 'transciation', description: 'закрытие счёта', size: 0.98, operator: 'Сидоров К.Л.', duration: '1:45' },
-  { id: '234567917', date: '2027-01-13', time: '11:45', status: 'pending', result: 'import', description: 'ожидание импорта', size: 6.78, operator: 'Козлова Е.Н.', duration: '0:00' },
-  { id: '234567918', date: '2027-01-12', time: '18:00', status: 'success', result: 'sync', description: 'обновление системы', size: 9.12, operator: 'Иванов А.С.', duration: '6:00' },
-  { id: '234567919', date: '2027-01-12', time: '17:00', status: 'success', result: 'export', description: 'отправка отчёта', size: 2.45, operator: 'Петрова М.В.', duration: '1:50' },
-  { id: '234567920', date: '2027-01-12', time: '16:15', status: 'failed', result: 'error', description: 'file not found', size: 0.01, operator: 'Сидоров К.Л.', duration: '0:00' },
-  { id: '234567921', date: '2027-01-12', time: '15:30', status: 'success', result: 'transciation', description: 'автоматическое списание', size: 1.34, operator: 'Козлова Е.Н.', duration: '2:20' },
-  { id: '234567922', date: '2027-01-12', time: '14:20', status: 'success', result: 'import', description: 'импорт из API', size: 4.56, operator: 'Иванов А.С.', duration: '3:40' },
-  { id: '234567923', date: '2027-01-12', time: '13:00', status: 'processing', result: 'export', description: 'генерация отчёта', size: 3.89, operator: 'Петрова М.В.', duration: '4:50' },
-  { id: '234567924', date: '2027-01-12', time: '12:15', status: 'success', result: 'sync', description: 'синхронизация пользователей', size: 2.12, operator: 'Сидоров К.Л.', duration: '1:30' },
-  { id: '234567925', date: '2027-01-11', time: '19:30', status: 'failed', result: 'error', description: 'disk space error', size: 0.67, operator: 'Козлова Е.Н.', duration: '0:00' },
-  { id: '234567926', date: '2027-01-11', time: '18:45', status: 'success', result: 'transciation', description: 'возврат средств', size: 1.78, operator: 'Иванов А.С.', duration: '3:10' },
-  { id: '234567927', date: '2027-01-11', time: '17:00', status: 'success', result: 'export', description: 'архивация данных', size: 11.23, operator: 'Петрова М.В.', duration: '7:20' },
-  { id: '234567928', date: '2027-01-11', time: '16:10', status: 'pending', result: 'import', description: 'подготовка к импорту', size: 0.45, operator: 'Сидоров К.Л.', duration: '0:00' },
-  { id: '234567929', date: '2027-01-11', time: '15:00', status: 'success', result: 'sync', description: 'обновление индексов', size: 3.45, operator: 'Козлова Е.Н.', duration: '2:00' },
-  { id: '234567930', date: '2027-01-11', time: '14:30', status: 'success', result: 'transciation', description: 'подписка на сервис', size: 0.89, operator: 'Иванов А.С.', duration: '1:15' },
-  { id: '234567931', date: '2027-01-10', time: '19:00', status: 'failed', result: 'error', description: 'authentication failed', size: 0.12, operator: 'Петрова М.В.', duration: '0:00' },
-  { id: '234567932', date: '2027-01-10', time: '18:20', status: 'success', result: 'import', description: 'загрузка документов', size: 6.34, operator: 'Сидоров К.Л.', duration: '4:00' },
-  { id: '234567933', date: '2027-01-10', time: '17:30', status: 'success', result: 'export', description: 'выгрузка аналитики', size: 5.12, operator: 'Козлова Е.Н.', duration: '3:30' },
-  { id: '234567934', date: '2027-01-10', time: '16:00', status: 'processing', result: 'sync', description: 'пересчёт статистики', size: 2.67, operator: 'Иванов А.С.', duration: '5:40' },
-  { id: '234567935', date: '2027-01-10', time: '15:15', status: 'success', result: 'transciation', description: 'конвертация валюты', size: 1.45, operator: 'Петрова М.В.', duration: '2:10' },
-  { id: '234567936', date: '2027-01-10', time: '14:00', status: 'success', result: 'import', description: 'интеграция с CRM', size: 8.90, operator: 'Сидоров К.Л.', duration: '6:15' },
-  { id: '234567937', date: '2027-01-09', time: '18:30', status: 'success', result: 'export', description: 'отчёт по KPI', size: 3.78, operator: 'Козлова Е.Н.', duration: '2:50' },
-  { id: '234567938', date: '2027-01-09', time: '17:45', status: 'failed', result: 'error', description: 'rate limit exceeded', size: 0.05, operator: 'Иванов А.С.', duration: '0:00' },
-  { id: '234567939', date: '2027-01-09', time: '16:30', status: 'success', result: 'sync', description: 'синхронизация каталога', size: 4.23, operator: 'Петрова М.В.', duration: '3:00' },
-];
+// ========================
+// CONFIG
+// ========================
+const API_KEY = 'QtEAKkjfW9UNDDT8o-FWOFYwKriwR0VkF8b_1THFp60';
+const HEADERS = { 'X-API-Key': API_KEY };
 
-const operators = ['Иванов А.С.', 'Петрова М.В.', 'Сидоров К.Л.', 'Козлова Е.Н.'];
-const colors = {
-  blue: '#3b82f6',
-  green: '#10b981',
-  red: '#ef4444',
-  orange: '#f59e0b',
-  purple: '#8b5cf6',
-  cyan: '#06b6d4',
-};
+async function apiFetch(url) {
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
 
+// ========================
+// STATE
+// ========================
+let callData = [];
+let statsData = null;
 let currentPeriod = 'week';
 
+const colors = {
+  blue: '#3b82f6', green: '#10b981', red: '#ef4444',
+  orange: '#f59e0b', purple: '#8b5cf6', cyan: '#06b6d4',
+};
+
+// ========================
+// LOAD
+// ========================
+async function loadAnalytics() {
+  try {
+    const [callsRes, stats] = await Promise.all([
+      apiFetch('/calls?limit=500&offset=0'),
+      apiFetch('/admin/stats'),
+    ]);
+    statsData = stats;
+    callData = callsRes.calls.map(c => {
+      const dt = new Date(c.created_at);
+      const dur = c.duration_seconds || 0;
+      const m = Math.floor(dur / 60), s = dur % 60;
+      return {
+        id: c.call_id,
+        date: dt.toISOString().slice(0, 10),
+        time: dt.toTimeString().slice(0, 5),
+        status: c.status,
+        operator: c.employee_name || '—',
+        duration: `${m}:${s.toString().padStart(2,'0')}`,
+        size: parseFloat(((c.file_size_bytes || 0) / 1024 / 1024).toFixed(2)),
+        sentiment: c.analysis_sentiment || null,
+        outcome: c.analysis_call_outcome || null,
+        direction: c.direction || '—',
+      };
+    });
+    updateMetrics();
+    renderAllCharts();
+  } catch (e) {
+    document.querySelector('.page-subtitle').textContent = 'Ошибка загрузки: ' + e.message;
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
-  renderLineChart();
-  renderDonutChart();
-  renderBarChart();
-  renderHeatmap();
-  renderVolumeChart();
-  renderTopPerformers();
-  updateMetrics();
+  loadAnalytics();
 });
 
 function updateMetrics() {
-  const total = callData.length;
-  const success = callData.filter(c => c.status === 'success').length;
-  const rate = Math.round((success / total) * 100);
+  const total = statsData ? statsData.calls.total : callData.length;
+  const analyzed = statsData ? (statsData.calls.by_status.analyzed || 0) : callData.filter(c => c.status === 'analyzed').length;
+  const rate = total ? Math.round((analyzed / total) * 100) : 0;
+  const last24h = statsData ? (statsData.calls.last_24h.downloaded || 0) : 0;
 
-  let totalMinutes = 0;
+  let totalSecs = 0, countWithDur = 0;
   callData.forEach(c => {
     const parts = c.duration.split(':');
-    totalMinutes += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    const secs = parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+    if (secs > 0) { totalSecs += secs; countWithDur++; }
   });
-  const avgMinutes = Math.round(totalMinutes / total);
-  const avgMin = Math.floor(avgMinutes / 60);
-  const avgSec = avgMinutes % 60;
+  const avgSecs = countWithDur ? Math.round(totalSecs / countWithDur) : 0;
+  const avgMin = Math.floor(avgSecs / 60);
+  const avgSec = avgSecs % 60;
 
   document.getElementById('analyticsTotal').textContent = total;
-  document.getElementById('analyticsSuccessRate').textContent = rate + '%';
-  document.getElementById('analyticsAvgDuration').textContent = `${avgMin}:${avgSec.toString().padStart(2, '0')}`;
+  document.getElementById('analyticsSuccessRate').textContent = total ? rate + '%' : '—';
+  document.getElementById('analyticsAvgDuration').textContent = countWithDur ? `${avgMin}:${avgSec.toString().padStart(2, '0')}` : '—';
+
+  const totalChangeEl = document.getElementById('analyticsTotalChange');
+  const rateChangeEl = document.getElementById('analyticsRateChange');
+  const durChangeEl = document.getElementById('analyticsDurChange');
+  if (totalChangeEl) totalChangeEl.textContent = last24h > 0 ? `+${last24h} за сегодня` : total > 0 ? `Всего в системе` : 'Нет данных';
+  if (rateChangeEl) rateChangeEl.textContent = total > 0 ? `${analyzed} проанализировано` : 'Нет данных';
+  if (durChangeEl) durChangeEl.textContent = countWithDur > 0 ? `по ${countWithDur} звонкам` : 'Нет данных';
 }
 
 function setPeriod(period, btn) {
@@ -772,9 +727,16 @@ function renderAllCharts() {
   renderLineChart();
   renderDonutChart();
   renderBarChart();
-  renderHeatmap();
   renderVolumeChart();
-  renderTopPerformers();
+}
+
+function _chartEmpty(container, message) {
+  const W = container.offsetWidth || 400;
+  const H = 280;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;">
+    <text x="${W/2}" y="${H/2 - 10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📊</text>
+    <text x="${W/2}" y="${H/2 + 20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">${message}</text>
+  </svg>`;
 }
 
 function renderLineChart() {
@@ -786,13 +748,19 @@ function renderLineChart() {
   const chartW = W - padding.left - padding.right;
   const chartH = H - padding.top - padding.bottom;
 
+  const data = callData;
+  if (!data.length) {
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = `<text x="${W/2}" y="${H/2 - 10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📈</text><text x="${W/2}" y="${H/2 + 20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">Нет данных о звонках</text>`;
+    return;
+  }
   // Group data by date
   const dateGroups = {};
-  callData.forEach(c => {
+  data.forEach(c => {
     if (!dateGroups[c.date]) dateGroups[c.date] = { total: 0, success: 0, errors: 0 };
     dateGroups[c.date].total++;
-    if (c.status === 'success') dateGroups[c.date].success++;
-    if (c.status === 'failed') dateGroups[c.date].errors++;
+    if (c.status === 'analyzed') dateGroups[c.date].success++;
+    if (c.status && c.status.startsWith('failed')) dateGroups[c.date].errors++;
   });
 
   const dates = Object.keys(dateGroups).sort();
@@ -809,10 +777,11 @@ function renderLineChart() {
   }
 
   // X labels
+  const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
   dates.forEach((d, i) => {
     const x = padding.left + (chartW * i / (dates.length - 1 || 1));
-    const day = new Date(d).getDate();
-    svgContent += `<text x="${x}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${day} янв</text>`;
+    const dt = new Date(d);
+    svgContent += `<text x="${x}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${dt.getDate()} ${months[dt.getMonth()]}</text>`;
   });
 
   // Helper to get points
@@ -858,16 +827,23 @@ function renderDonutChart() {
   const svg = document.getElementById('donutChart');
   const legend = document.getElementById('donutLegend');
 
+  const data = callData;
+  if (!data.length) {
+    svg.innerHTML = `<text x="100" y="90" text-anchor="middle" fill="#8892a8" font-size="28" font-family="Inter,sans-serif">📊</text><text x="100" y="115" text-anchor="middle" fill="#8892a8" font-size="11" font-family="Inter,sans-serif">Нет данных</text>`;
+    legend.innerHTML = '';
+    return;
+  }
+  const by = statsData ? statsData.calls.by_status : {};
   const statusCounts = {};
-  callData.forEach(c => {
-    statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
-  });
+  data.forEach(c => { statusCounts[c.status] = (statusCounts[c.status] || 0) + 1; });
 
-  const total = callData.length;
+  const total = data.length;
+  const failedCount = (statusCounts.failed_download || 0) + (statusCounts.failed_transcription || 0) + (statusCounts.failed_analysis || 0) + (statusCounts.failed || 0);
   const segments = [
-    { label: 'Успешные', count: statusCounts.success || 0, color: colors.green },
-    { label: 'Провальные', count: statusCounts.failed || 0, color: colors.red },
-    { label: 'Обработка', count: statusCounts.processing || 0, color: colors.orange },
+    { label: 'Проанализированы', count: statusCounts.analyzed || statusCounts.success || 0, color: colors.green },
+    { label: 'Транскрибированы', count: statusCounts.transcribed || 0, color: colors.cyan },
+    { label: 'Сохранены', count: statusCounts.stored || 0, color: colors.blue },
+    { label: 'Ошибки', count: failedCount, color: colors.red },
     { label: 'Ожидание', count: statusCounts.pending || 0, color: colors.purple },
   ];
 
@@ -929,63 +905,47 @@ function renderDonutChart() {
 
 function renderBarChart() {
   const container = document.getElementById('barChart');
-  const resultColors = {
-    transciation: colors.cyan,
-    sync: colors.purple,
-    export: colors.orange,
-    import: colors.blue,
-    error: colors.red,
-  };
+  const data = callData;
 
-  const resultLabels = {
-    transciation: 'Транзакции',
-    sync: 'Синхронизация',
-    export: 'Экспорт',
-    import: 'Импорт',
-    error: 'Ошибки',
-  };
-
-  const resultCounts = {};
-  callData.forEach(c => {
-    resultCounts[c.result] = (resultCounts[c.result] || 0) + 1;
-  });
-
-  const maxCount = Math.max(...Object.values(resultCounts)) + 2;
-  let html = '';
-
-  Object.keys(resultLabels).forEach(key => {
-    const count = resultCounts[key] || 0;
-    const heightPct = (count / maxCount) * 100;
-    html += `
-      <div class="bar-group">
-        <div class="bar-wrapper">
-          <div class="bar" style="height:${heightPct}%;background:${resultColors[key]};width:100%;">
-            <span class="bar-value">${count}</span>
-          </div>
-        </div>
-        <span class="bar-label">${resultLabels[key]}</span>
-      </div>`;
-  });
-
-  container.innerHTML = html;
-}
-
-function renderHeatmap() {
-  const container = document.getElementById('heatmap');
-
-  // Generate 4 weeks of data
-  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  let html = '';
-
-  for (let week = 3; week >= 0; week--) {
-    for (let day = 0; day < 7; day++) {
-      const count = Math.floor(Math.random() * 10);
-      const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
-      html += `<div class="heatmap-cell level-${level}" title="${dayNames[day]}: ${count} операций">${count || ''}</div>`;
-    }
+  if (!data.length) {
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:200px;color:#8892a8;flex-direction:column;gap:8px;"><span style="font-size:28px;">📊</span><span style="font-size:13px;">Нет данных для отображения</span></div>`;
+    return;
   }
 
-  container.innerHTML = html;
+  const statusColors = {
+    analyzed: colors.green,
+    transcribed: colors.cyan,
+    stored: colors.blue,
+    pending: colors.purple,
+    failed_download: colors.red,
+    failed_transcription: colors.orange,
+    failed_analysis: colors.red,
+    // fallback for stub data
+    success: colors.green, failed: colors.red, processing: colors.orange,
+  };
+  const statusLabels = {
+    analyzed: 'Анализ', transcribed: 'Транскр.', stored: 'Сохранён',
+    pending: 'Ожидание', failed_download: 'Ош.загр.', failed_transcription: 'Ош.транскр.', failed_analysis: 'Ош.анализа',
+    success: 'Успех', failed: 'Ошибки', processing: 'Обработка',
+  };
+
+  const counts = {};
+  data.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
+  const maxCount = Math.max(...Object.values(counts), 1) + 1;
+
+  container.innerHTML = Object.entries(counts).map(([key, count]) => {
+    const heightPct = (count / maxCount) * 100;
+    const col = statusColors[key] || colors.blue;
+    const lbl = statusLabels[key] || key;
+    return `<div class="bar-group">
+      <div class="bar-wrapper">
+        <div class="bar" style="height:${heightPct}%;background:${col};width:100%;">
+          <span class="bar-value">${count}</span>
+        </div>
+      </div>
+      <span class="bar-label">${lbl}</span>
+    </div>`;
+  }).join('');
 }
 
 function renderVolumeChart() {
@@ -994,8 +954,13 @@ function renderVolumeChart() {
   const H = 280;
   const padding = { top: 20, right: 20, bottom: 40, left: 50 };
 
+  const data = callData;
+  if (!data.length) {
+    container.innerHTML = _chartEmpty(container, 'Нет данных об объёмах');
+    return;
+  }
   const dateGroups = {};
-  callData.forEach(c => {
+  data.forEach(c => {
     dateGroups[c.date] = (dateGroups[c.date] || 0) + c.size;
   });
 
@@ -1028,7 +993,7 @@ function renderVolumeChart() {
         </linearGradient>
       </defs>
       <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#${gradientId})" opacity="0.85"/>
-      <text x="${x + barW/2}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${day} янв</text>
+      <text x="${x + barW/2}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${new Date(d).getDate()} ${['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][new Date(d).getMonth()]}</text>
       <text x="${x + barW/2}" y="${y - 6}" class="chart-axis-label" text-anchor="middle" fill="${colors.blue}" font-weight="600">${dateGroups[d].toFixed(1)}</text>
     `;
   });
@@ -1036,52 +1001,16 @@ function renderVolumeChart() {
   container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;">${svgContent}</svg>`;
 }
 
-function renderTopPerformers() {
-  const tbody = document.getElementById('topPerformersBody');
-
-  const stats = {};
-  operators.forEach(op => {
-    stats[op] = { total: 0, success: 0 };
-  });
-
-  callData.forEach(c => {
-    if (!stats[c.operator]) stats[c.operator] = { total: 0, success: 0 };
-    stats[c.operator].total++;
-    if (c.status === 'success') stats[c.operator].success++;
-  });
-
-  const ranked = Object.entries(stats)
-    .map(([name, s]) => ({ name, ...s, rate: Math.round((s.success / s.total) * 100) }))
-    .sort((a, b) => b.success - a.success);
-
-  tbody.innerHTML = ranked.map((r, i) => {
-    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'default';
-    const barColor = i === 0 ? colors.green : i === 1 ? colors.blue : i === 2 ? colors.orange : colors.purple;
-    return `
-      <tr>
-        <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
-        <td style="font-weight:600;color:var(--text-primary);">${r.name}</td>
-        <td>${r.total}</td>
-        <td style="color:var(--accent-green);font-weight:600;">${r.success}</td>
-        <td><span class="status-badge success"><span class="status-dot"></span>${r.rate}%</span></td>
-        <td>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width:${r.rate}%;background:${barColor};"></div>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
-}
-
 function refreshAnalytics() {
-  renderAllCharts();
-  updateMetrics();
+  loadAnalytics();
 }
 
 function exportAnalytics() {
+  if (!callData.length) { alert('Нет данных для экспорта'); return; }
+  const data = callData;
   const csvContent = [
-    ['Дата', 'Статус', 'Результат', 'Оператор', 'Размер'].join(','),
-    ...callData.map(c => [c.date, c.status, c.result, c.operator, c.size].join(','))
+    ['Дата', 'Статус', 'Направление', 'Оператор', 'Длительность', 'Размер МБ'].join(','),
+    ...data.map(c => [c.date, c.status, c.direction || '—', `"${c.operator}"`, c.duration, c.size].join(','))
   ].join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

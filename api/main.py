@@ -243,6 +243,7 @@ def list_calls(
     employee_id: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None, description="От даты (ISO 8601): 2024-01-01"),
     date_to: Optional[str] = Query(None, description="До даты (ISO 8601): 2024-12-31"),
+    q: Optional[str] = Query(None, description="Полнотекстовый поиск: транскрипт, сотрудник, телефон"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
     conn=Depends(_db),
@@ -267,6 +268,13 @@ def list_calls(
     if date_to:
         conditions.append("created_at <= %s")
         params.append(date_to)
+    if q:
+        pq = f"%{q}%"
+        conditions.append(
+            "(transcript_text ILIKE %s OR analysis_summary ILIKE %s"
+            " OR employee_name ILIKE %s OR phone_from LIKE %s OR phone_to LIKE %s)"
+        )
+        params.extend([pq, pq, pq, pq, pq])
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
@@ -274,18 +282,32 @@ def list_calls(
         cur.execute(f"SELECT COUNT(*) AS cnt FROM calls {where}", params)
         total = cur.fetchone()["cnt"]
 
+        extra_col = ", transcript_text, analysis_summary" if q else ""
         cur.execute(
             f"""SELECT call_id, mango_recording_id, source, employee_id, employee_name,
                        phone_from, phone_to, direction, duration_seconds, start_time,
                        file_size_bytes, status, transcribed_at, analyzed_at,
                        analysis_sentiment, analysis_score, analysis_call_outcome,
-                       created_at
+                       created_at{extra_col}
                 FROM calls {where}
                 ORDER BY created_at DESC
                 LIMIT %s OFFSET %s""",
             params + [limit, offset],
         )
         rows = [dict(r) for r in cur.fetchall()]
+
+    if q:
+        ql = q.lower()
+        for row in rows:
+            snippet = None
+            for field in ("transcript_text", "analysis_summary"):
+                text = row.pop(field, None) or ""
+                if snippet is None and ql in text.lower():
+                    pos = text.lower().find(ql)
+                    start = max(0, pos - 60)
+                    end = min(len(text), pos + len(q) + 60)
+                    snippet = ("…" if start > 0 else "") + text[start:end] + ("…" if end < len(text) else "")
+            row["transcript_snippet"] = snippet
 
     return {"total": total, "limit": limit, "offset": offset, "calls": rows}
 
