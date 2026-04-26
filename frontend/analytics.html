@@ -739,95 +739,189 @@ function _chartEmpty(container, message) {
   </svg>`;
 }
 
+// ── Period helpers ────────────────────────────────────────────────────────────
+
+function periodCutoff() {
+  const now = new Date();
+  if (currentPeriod === 'day') {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  const daysMap = { week: 7, month: 30, quarter: 90, year: 365 };
+  const days = daysMap[currentPeriod] || 7;
+  const c = new Date(now);
+  c.setDate(c.getDate() - days);
+  c.setHours(0, 0, 0, 0);
+  return c;
+}
+
+function filteredByPeriod() {
+  const cutoff = periodCutoff();
+  return callData.filter(c => new Date(c.date + 'T12:00:00') >= cutoff);
+}
+
+// Returns ordered bucket-key array covering the full period (no gaps)
+function periodBuckets() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  if (currentPeriod === 'day') {
+    const today = ymd(now);
+    return Array.from({ length: 24 }, (_, h) => `${today}T${pad(h)}`);
+  }
+  if (currentPeriod === 'year') {
+    const buckets = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push(`${d.getFullYear()}-${pad(d.getMonth()+1)}`);
+    }
+    return buckets;
+  }
+  if (currentPeriod === 'quarter') {
+    const buckets = [];
+    for (let i = 12; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      buckets.push(ymd(d));
+    }
+    return buckets;
+  }
+  const nDays = { week: 7, month: 30 }[currentPeriod] || 7;
+  const buckets = [];
+  for (let i = nDays - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    buckets.push(ymd(d));
+  }
+  return buckets;
+}
+
+// Maps a call record to its bucket key (must match keys from periodBuckets)
+function callBucketKey(c) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  if (currentPeriod === 'day') {
+    return `${c.date}T${(c.time || '00:00').slice(0, 2)}`;
+  }
+  if (currentPeriod === 'year') {
+    return c.date.slice(0, 7);
+  }
+  if (currentPeriod === 'quarter') {
+    const callDate = new Date(c.date + 'T12:00:00');
+    const daysAgo = Math.floor((now - callDate) / 86400000);
+    const weekIdx = Math.min(12, Math.floor(daysAgo / 7));
+    const d = new Date(now);
+    d.setDate(d.getDate() - weekIdx * 7);
+    return ymd(d);
+  }
+  return c.date;
+}
+
+// Human-readable label for a bucket key
+function bucketLabel(bucket) {
+  const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+  if (currentPeriod === 'day') return bucket.slice(11, 13) + ':00';
+  if (currentPeriod === 'year') {
+    const [, m] = bucket.split('-');
+    return months[parseInt(m) - 1];
+  }
+  // Daily / weekly — "DD мес"
+  const parts = bucket.split('-').map(Number);
+  return `${parts[2]} ${months[parts[1] - 1]}`;
+}
+
 function renderLineChart() {
   const svg = document.getElementById('lineChart');
   const container = document.getElementById('lineChartContainer');
-  const W = container.offsetWidth;
+  const W = container.offsetWidth || 600;
   const H = 280;
   const padding = { top: 20, right: 20, bottom: 40, left: 40 };
   const chartW = W - padding.left - padding.right;
   const chartH = H - padding.top - padding.bottom;
 
-  const data = callData;
+  const data = filteredByPeriod();
   if (!data.length) {
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.innerHTML = `<text x="${W/2}" y="${H/2 - 10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📈</text><text x="${W/2}" y="${H/2 + 20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">Нет данных о звонках</text>`;
+    svg.innerHTML = `<text x="${W/2}" y="${H/2-10}" text-anchor="middle" fill="#8892a8" font-size="32" font-family="Inter,sans-serif">📈</text>
+      <text x="${W/2}" y="${H/2+20}" text-anchor="middle" fill="#8892a8" font-size="14" font-family="Inter,sans-serif">Нет данных за выбранный период</text>`;
     return;
   }
-  // Group data by date
-  const dateGroups = {};
+
+  // Build groups over the full period (fills gaps with zeros)
+  const buckets = periodBuckets();
+  const groups = {};
+  buckets.forEach(b => { groups[b] = { total: 0, success: 0, errors: 0 }; });
   data.forEach(c => {
-    if (!dateGroups[c.date]) dateGroups[c.date] = { total: 0, success: 0, errors: 0 };
-    dateGroups[c.date].total++;
-    if (c.status === 'analyzed') dateGroups[c.date].success++;
-    if (c.status && c.status.startsWith('failed')) dateGroups[c.date].errors++;
+    const key = callBucketKey(c);
+    if (groups[key] !== undefined) {
+      groups[key].total++;
+      if (c.status === 'analyzed') groups[key].success++;
+      if (c.status && c.status.startsWith('failed')) groups[key].errors++;
+    }
   });
 
-  const dates = Object.keys(dateGroups).sort();
-  const maxVal = Math.max(...dates.map(d => dateGroups[d].total)) + 2;
+  const n = buckets.length;
+  const maxVal = Math.max(...buckets.map(b => groups[b].total), 1);
+  const bottom = padding.top + chartH;
 
-  let svgContent = '';
+  // Positions
+  function xPos(i) { return n === 1 ? padding.left + chartW / 2 : padding.left + chartW * i / (n - 1); }
+  function yPos(v) { return padding.top + chartH - (v / maxVal) * chartH; }
+  function toPath(pts) { return pts.map((p, i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '); }
 
-  // Grid lines
+  let s = '';
+
+  // Grid
   for (let i = 0; i <= 4; i++) {
-    const y = padding.top + (chartH * i / 4);
+    const y = padding.top + chartH * i / 4;
     const val = Math.round(maxVal * (1 - i / 4));
-    svgContent += `<line x1="${padding.left}" y1="${y}" x2="${W - padding.right}" y2="${y}" class="chart-grid-line"/>`;
-    svgContent += `<text x="${padding.left - 8}" y="${y + 4}" class="chart-axis-label" text-anchor="end">${val}</text>`;
+    s += `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${W-padding.right}" y2="${y.toFixed(1)}" class="chart-grid-line"/>`;
+    s += `<text x="${padding.left-8}" y="${(y+4).toFixed(1)}" class="chart-axis-label" text-anchor="end">${val}</text>`;
   }
 
-  // X labels
-  const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-  dates.forEach((d, i) => {
-    const x = padding.left + (chartW * i / (dates.length - 1 || 1));
-    const dt = new Date(d);
-    svgContent += `<text x="${x}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${dt.getDate()} ${months[dt.getMonth()]}</text>`;
+  // X-axis labels (thinned out to avoid overlap)
+  const maxLabels = currentPeriod === 'day' ? 12 : currentPeriod === 'month' ? 10 : currentPeriod === 'quarter' ? 7 : n;
+  const step = Math.ceil(n / maxLabels);
+  buckets.forEach((b, i) => {
+    if (i % step !== 0 && i !== n - 1) return;
+    s += `<text x="${xPos(i).toFixed(1)}" y="${H-8}" class="chart-axis-label" text-anchor="middle">${bucketLabel(b)}</text>`;
   });
 
-  // Helper to get points
-  function getPoints(key) {
-    return dates.map((d, i) => {
-      const x = padding.left + (chartW * i / (dates.length - 1 || 1));
-      const y = padding.top + chartH - (dateGroups[d][key] / maxVal * chartH);
-      return { x, y };
+  // Build point arrays
+  const totalPts   = buckets.map((b, i) => ({ x: xPos(i), y: yPos(groups[b].total) }));
+  const successPts = buckets.map((b, i) => ({ x: xPos(i), y: yPos(groups[b].success) }));
+  const errorPts   = buckets.map((b, i) => ({ x: xPos(i), y: yPos(groups[b].errors) }));
+
+  // Areas
+  s += `<path d="${toPath(totalPts)} L${totalPts[n-1].x.toFixed(1)},${bottom} L${totalPts[0].x.toFixed(1)},${bottom} Z" class="chart-area" fill="${colors.blue}"/>`;
+  s += `<path d="${toPath(successPts)} L${successPts[n-1].x.toFixed(1)},${bottom} L${successPts[0].x.toFixed(1)},${bottom} Z" class="chart-area" fill="${colors.green}"/>`;
+
+  // Lines
+  s += `<path d="${toPath(totalPts)}" class="chart-line" stroke="${colors.blue}"/>`;
+  s += `<path d="${toPath(successPts)}" class="chart-line" stroke="${colors.green}"/>`;
+  s += `<path d="${toPath(errorPts)}" class="chart-line" stroke="${colors.red}"/>`;
+
+  // Dots (skip when too dense)
+  if (n <= 31) {
+    totalPts.forEach(p => {
+      s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" class="chart-dot" fill="${colors.blue}"/>`;
+    });
+    successPts.forEach(p => {
+      s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" class="chart-dot" fill="${colors.green}"/>`;
     });
   }
 
-  function pointsToPath(points) {
-    return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  }
-
-  // Draw areas and lines
-  const totalPoints = getPoints('total');
-  const successPoints = getPoints('success');
-  const errorPoints = getPoints('errors');
-
-  // Areas
-  svgContent += `<path d="${pointsToPath(totalPoints)} L ${totalPoints[totalPoints.length-1].x} ${padding.top + chartH} L ${totalPoints[0].x} ${padding.top + chartH} Z" class="chart-area" fill="${colors.blue}"/>`;
-  svgContent += `<path d="${pointsToPath(successPoints)} L ${successPoints[successPoints.length-1].x} ${padding.top + chartH} L ${successPoints[0].x} ${padding.top + chartH} Z" class="chart-area" fill="${colors.green}"/>`;
-
-  // Lines
-  svgContent += `<path d="${pointsToPath(totalPoints)}" class="chart-line" stroke="${colors.blue}"/>`;
-  svgContent += `<path d="${pointsToPath(successPoints)}" class="chart-line" stroke="${colors.green}"/>`;
-  svgContent += `<path d="${pointsToPath(errorPoints)}" class="chart-line" stroke="${colors.red}"/>`;
-
-  // Dots
-  totalPoints.forEach(p => {
-    svgContent += `<circle cx="${p.x}" cy="${p.y}" r="4" class="chart-dot" fill="${colors.blue}"/>`;
-  });
-  successPoints.forEach(p => {
-    svgContent += `<circle cx="${p.x}" cy="${p.y}" r="4" class="chart-dot" fill="${colors.green}"/>`;
-  });
-
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.innerHTML = svgContent;
+  svg.innerHTML = s;
 }
 
 function renderDonutChart() {
   const svg = document.getElementById('donutChart');
   const legend = document.getElementById('donutLegend');
 
-  const data = callData;
+  const data = filteredByPeriod();
   if (!data.length) {
     svg.innerHTML = `<text x="100" y="90" text-anchor="middle" fill="#8892a8" font-size="28" font-family="Inter,sans-serif">📊</text><text x="100" y="115" text-anchor="middle" fill="#8892a8" font-size="11" font-family="Inter,sans-serif">Нет данных</text>`;
     legend.innerHTML = '';
@@ -905,7 +999,7 @@ function renderDonutChart() {
 
 function renderBarChart() {
   const container = document.getElementById('barChart');
-  const data = callData;
+  const data = filteredByPeriod();
 
   if (!data.length) {
     container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:200px;color:#8892a8;flex-direction:column;gap:8px;"><span style="font-size:28px;">📊</span><span style="font-size:13px;">Нет данных для отображения</span></div>`;
@@ -950,55 +1044,69 @@ function renderBarChart() {
 
 function renderVolumeChart() {
   const container = document.getElementById('volumeChart');
-  const W = container.offsetWidth || 500;
+  const W = container.offsetWidth || 600;
   const H = 280;
   const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+  const chartW = W - padding.left - padding.right;
+  const chartH = H - padding.top - padding.bottom;
 
-  const data = callData;
+  const data = filteredByPeriod();
   if (!data.length) {
     container.innerHTML = _chartEmpty(container, 'Нет данных об объёмах');
     return;
   }
-  const dateGroups = {};
+
+  const buckets = periodBuckets();
+  const groups = {};
+  buckets.forEach(b => { groups[b] = 0; });
   data.forEach(c => {
-    dateGroups[c.date] = (dateGroups[c.date] || 0) + c.size;
+    const key = callBucketKey(c);
+    if (groups[key] !== undefined) groups[key] += c.size;
   });
 
-  const dates = Object.keys(dateGroups).sort();
-  const maxVol = Math.max(...Object.values(dateGroups)) * 1.2;
+  const n = buckets.length;
+  const maxVol = Math.max(...buckets.map(b => groups[b]), 0.01) * 1.15;
+  const barW = Math.max(4, Math.min(40, chartW / n - 4));
 
-  let svgContent = '';
+  function xCenter(i) { return n === 1 ? padding.left + chartW / 2 : padding.left + chartW * i / (n - 1); }
 
+  let s = '';
+
+  // Shared gradient def
+  s += `<defs>
+    <linearGradient id="volGradMain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${colors.blue}"/>
+      <stop offset="100%" stop-color="${colors.purple}"/>
+    </linearGradient>
+  </defs>`;
+
+  // Grid
   for (let i = 0; i <= 4; i++) {
-    const y = padding.top + ((H - padding.top - padding.bottom) * i / 4);
+    const y = padding.top + chartH * i / 4;
     const val = (maxVol * (1 - i / 4)).toFixed(1);
-    svgContent += `<line x1="${padding.left}" y1="${y}" x2="${W - padding.right}" y2="${y}" class="chart-grid-line"/>`;
-    svgContent += `<text x="${padding.left - 8}" y="${y + 4}" class="chart-axis-label" text-anchor="end">${val}</text>`;
+    s += `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${W-padding.right}" y2="${y.toFixed(1)}" class="chart-grid-line"/>`;
+    s += `<text x="${padding.left-8}" y="${(y+4).toFixed(1)}" class="chart-axis-label" text-anchor="end">${val}</text>`;
   }
 
-  const barW = Math.min(40, (W - padding.left - padding.right) / dates.length - 4);
+  // X label step
+  const maxLabels = currentPeriod === 'day' ? 12 : currentPeriod === 'month' ? 10 : currentPeriod === 'quarter' ? 7 : n;
+  const step = Math.ceil(n / maxLabels);
 
-  dates.forEach((d, i) => {
-    const x = padding.left + ((W - padding.left - padding.right) * i / (dates.length - 1 || 1)) - barW / 2;
-    const barH = (dateGroups[d] / maxVol) * (H - padding.top - padding.bottom);
-    const y = padding.top + (H - padding.top - padding.bottom) - barH;
-    const day = new Date(d).getDate();
-
-    const gradientId = `volGrad${i}`;
-    svgContent += `
-      <defs>
-        <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${colors.blue}"/>
-          <stop offset="100%" stop-color="${colors.purple}"/>
-        </linearGradient>
-      </defs>
-      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#${gradientId})" opacity="0.85"/>
-      <text x="${x + barW/2}" y="${H - 8}" class="chart-axis-label" text-anchor="middle">${new Date(d).getDate()} ${['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][new Date(d).getMonth()]}</text>
-      <text x="${x + barW/2}" y="${y - 6}" class="chart-axis-label" text-anchor="middle" fill="${colors.blue}" font-weight="600">${dateGroups[d].toFixed(1)}</text>
-    `;
+  buckets.forEach((b, i) => {
+    const cx = xCenter(i);
+    const vol = groups[b];
+    const barH = (vol / maxVol) * chartH;
+    const y = padding.top + chartH - barH;
+    s += `<rect x="${(cx - barW/2).toFixed(1)}" y="${y.toFixed(1)}" width="${barW}" height="${Math.max(barH, 1).toFixed(1)}" rx="3" fill="url(#volGradMain)" opacity="0.85"/>`;
+    if (vol > 0) {
+      s += `<text x="${cx.toFixed(1)}" y="${(y-5).toFixed(1)}" class="chart-axis-label" text-anchor="middle" fill="${colors.blue}" font-weight="600">${vol.toFixed(1)}</text>`;
+    }
+    if (i % step === 0 || i === n - 1) {
+      s += `<text x="${cx.toFixed(1)}" y="${H-8}" class="chart-axis-label" text-anchor="middle">${bucketLabel(b)}</text>`;
+    }
   });
 
-  container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;">${svgContent}</svg>`;
+  container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;">${s}</svg>`;
 }
 
 function refreshAnalytics() {
